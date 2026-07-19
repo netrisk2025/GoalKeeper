@@ -14,6 +14,14 @@ interface Props {
   onDrag: (id: string, x: number, y: number) => void;
 }
 
+/** Nominal node size (screen px at zoom 1). Max/min zoom ratio ≤ 5×. */
+export const NODE_W = 168;
+export const NODE_H = 72;
+/** Readable minimum zoom; maximum is 5× this. */
+export const MIN_ZOOM = 0.4;
+export const MAX_ZOOM = MIN_ZOOM * 5; // 2.0
+export const NOMINAL_ZOOM = 1.0;
+
 const TYPE_COLOR: Record<string, string> = {
   GsnGoal: "#3d5a80",
   GsnStrategy: "#2a6b4a",
@@ -99,6 +107,47 @@ function bfsOrder(structure: GoalStructure): string[] {
   return order;
 }
 
+/**
+ * Apply a usable view: never blow a single node up to fill the viewport.
+ * Zoom stays within [MIN_ZOOM, MAX_ZOOM] (5× span); default is NOMINAL_ZOOM.
+ */
+function applySmartView(cy: Core): void {
+  if (cy.nodes().length === 0) return;
+
+  // One or few nodes: keep nominal size, centered — do not cy.fit() (that zooms in huge)
+  if (cy.nodes().length <= 2) {
+    cy.zoom({ level: NOMINAL_ZOOM, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
+    cy.center(cy.nodes());
+    return;
+  }
+
+  cy.fit(cy.elements(), 48);
+  let z = cy.zoom();
+  if (z > NOMINAL_ZOOM) z = NOMINAL_ZOOM; // never larger than nominal for multi-node either
+  if (z < MIN_ZOOM) z = MIN_ZOOM;
+  if (z > MAX_ZOOM) z = MAX_ZOOM;
+  cy.zoom(z);
+  cy.center(cy.elements());
+}
+
+/** Grow scrollable canvas surface so content at min zoom still scrolls. */
+function sizeScrollSurface(cy: Core, scrollEl: HTMLElement | null, canvasEl: HTMLElement | null): void {
+  if (!scrollEl || !canvasEl || cy.nodes().length === 0) return;
+  const bb = cy.elements().boundingBox();
+  const pad = 120;
+  const modelW = Math.max(1, bb.w + pad * 2);
+  const modelH = Math.max(1, bb.h + pad * 2);
+  // At MIN_ZOOM the rendered size is model * MIN_ZOOM; ensure surface at least that
+  // relative to nominal, and at least the viewport size.
+  const viewW = scrollEl.clientWidth;
+  const viewH = scrollEl.clientHeight;
+  const needW = Math.max(viewW, modelW * NOMINAL_ZOOM + pad);
+  const needH = Math.max(viewH, modelH * NOMINAL_ZOOM + pad);
+  canvasEl.style.width = `${Math.ceil(needW)}px`;
+  canvasEl.style.height = `${Math.ceil(needH)}px`;
+  cy.resize();
+}
+
 export function GsnCanvas({
   structure,
   positions,
@@ -109,6 +158,7 @@ export function GsnCanvas({
   onSelect,
   onDrag,
 }: Props) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const revealTimers = useRef<number[]>([]);
@@ -118,7 +168,6 @@ export function GsnCanvas({
   onSelectRef.current = onSelect;
   onDragRef.current = onDrag;
 
-  // Create cytoscape once
   useEffect(() => {
     if (!containerRef.current) return;
     const cy = cytoscape({
@@ -128,11 +177,11 @@ export function GsnCanvas({
           selector: "node",
           style: {
             shape: "round-rectangle",
-            width: 180,
-            height: 70,
+            width: NODE_W,
+            height: NODE_H,
             label: "data(label)",
             "text-wrap": "wrap",
-            "text-max-width": 160,
+            "text-max-width": NODE_W - 16,
             "font-size": 11,
             "font-family": "IBM Plex Sans, sans-serif",
             "text-valign": "center",
@@ -142,6 +191,7 @@ export function GsnCanvas({
             "border-width": 2,
             "border-color": "data(border)",
             "overlay-padding": 4,
+            "min-zoomed-font-size": 8,
           },
         },
         {
@@ -183,9 +233,11 @@ export function GsnCanvas({
         },
       ] as unknown as cytoscape.StylesheetJson,
       layout: { name: "preset" },
-      wheelSensitivity: 0.25,
-      minZoom: 0.25,
-      maxZoom: 2.5,
+      wheelSensitivity: 0.2,
+      minZoom: MIN_ZOOM,
+      maxZoom: MAX_ZOOM,
+      userZoomingEnabled: true,
+      userPanningEnabled: true,
     });
     cyRef.current = cy;
 
@@ -199,12 +251,17 @@ export function GsnCanvas({
       const n = evt.target;
       const p = n.position();
       onDragRef.current(n.id(), p.x, p.y);
+      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
+    });
+    cy.on("zoom pan", () => {
+      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
     });
 
     const ro = new ResizeObserver(() => {
       cy.resize();
+      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
     });
-    ro.observe(containerRef.current);
+    if (scrollRef.current) ro.observe(scrollRef.current);
 
     return () => {
       revealTimers.current.forEach((t) => window.clearTimeout(t));
@@ -214,7 +271,6 @@ export function GsnCanvas({
     };
   }, []);
 
-  // Progressive full reveal when revealToken changes (open root / last saved)
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
@@ -247,7 +303,8 @@ export function GsnCanvas({
         }
       }
       if (selectedId) cy.getElementById(selectedId).select();
-      if (cy.nodes().length) cy.fit(undefined, 40);
+      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
+      applySmartView(cy);
     };
 
     const onSkip = () => finishAll();
@@ -271,7 +328,8 @@ export function GsnCanvas({
         }
         if (i === order.length - 1) {
           if (selectedId) cy.getElementById(selectedId).select();
-          if (cy.nodes().length) cy.fit(undefined, 40);
+          sizeScrollSurface(cy, scrollRef.current, containerRef.current);
+          applySmartView(cy);
         }
       }, i * step);
       revealTimers.current.push(t);
@@ -284,21 +342,18 @@ export function GsnCanvas({
       revealTimers.current.forEach((t) => window.clearTimeout(t));
       revealTimers.current = [];
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- full reveal only on token
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealToken, structure.rootId]);
 
-  // Incremental sync on graph mutations (wizard apply, detail create, etc.)
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
-    // Skip if progressive reveal is mid-flight for this open
     if (revealTimers.current.length > 0 && cy.nodes().length === 0) return;
 
     const { nodes, edges } = buildElements(structure, positions, errorIds);
     const wantNodes = new Set(nodes.map((n) => n.data!.id as string));
     const wantEdges = new Set(edges.map((e) => e.data!.id as string));
 
-    // Remove stale
     cy.nodes().forEach((n) => {
       if (!wantNodes.has(n.id())) n.remove();
     });
@@ -306,7 +361,7 @@ export function GsnCanvas({
       if (!wantEdges.has(e.id())) e.remove();
     });
 
-    // Add / update nodes
+    let added = false;
     for (const n of nodes) {
       const id = n.data!.id as string;
       const existing = cy.getElementById(id);
@@ -317,7 +372,7 @@ export function GsnCanvas({
         else existing.removeClass("error");
       } else {
         cy.add(n);
-        // brief entrance: already at layout position
+        added = true;
       }
     }
     for (const e of edges) {
@@ -325,7 +380,10 @@ export function GsnCanvas({
       if (!cy.getElementById(id).nonempty()) {
         const s = e.data!.source as string;
         const t = e.data!.target as string;
-        if (cy.getElementById(s).nonempty() && cy.getElementById(t).nonempty()) cy.add(e);
+        if (cy.getElementById(s).nonempty() && cy.getElementById(t).nonempty()) {
+          cy.add(e);
+          added = true;
+        }
       }
     }
 
@@ -333,9 +391,12 @@ export function GsnCanvas({
       cy.elements().unselect();
       cy.getElementById(selectedId).select();
     }
+    sizeScrollSurface(cy, scrollRef.current, containerRef.current);
+    if (added && cy.nodes().length <= 3) {
+      applySmartView(cy);
+    }
   }, [structure, positions, graphEpoch, errorIds, selectedId]);
 
-  // Keep selection in sync without full rebuild
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
@@ -343,5 +404,9 @@ export function GsnCanvas({
     if (selectedId) cy.getElementById(selectedId).select();
   }, [selectedId]);
 
-  return <div className="gk-canvas" ref={containerRef} data-testid="gsn-canvas" />;
+  return (
+    <div className="gk-canvas-scroll" ref={scrollRef}>
+      <div className="gk-canvas" ref={containerRef} data-testid="gsn-canvas" />
+    </div>
+  );
 }

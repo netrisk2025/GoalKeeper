@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "./state/store";
 import { IconClose } from "./components/Icon";
 import { GearMenu } from "./components/GearMenu";
+import { OpenVaultDialog } from "./components/OpenVaultDialog";
 import { GsnCanvas } from "./features/structure/GsnCanvas";
 import { DetailPanel } from "./features/structure/DetailPanel";
 import { WizardDialog } from "./features/wizard/WizardDialog";
 import { exportJson, exportMarkdown } from "./core/export/report";
 import { displayTypeName } from "./core/model/types";
+import { suggestRootDir } from "./lib/fs";
 
 export default function App() {
   const bootstrap = useAppStore((s) => s.bootstrap);
@@ -17,7 +19,6 @@ export default function App() {
   const structure = useAppStore((s) => s.structure);
   const mode = useAppStore((s) => s.mode);
   const setMode = useAppStore((s) => s.setMode);
-  const openVault = useAppStore((s) => s.openVault);
   const useDemoVault = useAppStore((s) => s.useDemoVault);
   const openRoot = useAppStore((s) => s.openRoot);
   const createRoot = useAppStore((s) => s.createRoot);
@@ -37,10 +38,25 @@ export default function App() {
   const revealToken = useAppStore((s) => s.revealToken);
   const graphEpoch = useAppStore((s) => s.graphEpoch);
 
+  const [openVaultUi, setOpenVaultUi] = useState(false);
   const [newRootOpen, setNewRootOpen] = useState(false);
   const [rootName, setRootName] = useState("");
   const [rootStatement, setRootStatement] = useState("");
+  const [rootDir, setRootDir] = useState("");
+  const [dirTouched, setDirTouched] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  const existingRootDirs = useMemo(() => roots.map((r) => r.rootDir), [roots]);
+  const suggestedDir = useMemo(
+    () => suggestRootDir(rootName || "Root-Goal", existingRootDirs),
+    [rootName, existingRootDirs],
+  );
+
+  useEffect(() => {
+    if (newRootOpen && !dirTouched) {
+      setRootDir(suggestedDir);
+    }
+  }, [newRootOpen, suggestedDir, dirTouched]);
 
   useEffect(() => {
     void bootstrap();
@@ -81,7 +97,7 @@ export default function App() {
           </div>
         </div>
         <div className="gk-banner-actions">
-          <button type="button" className="gk-btn" onClick={() => void openVault()}>
+          <button type="button" className="gk-btn" onClick={() => setOpenVaultUi(true)}>
             Open vault
           </button>
           <button type="button" className="gk-btn" onClick={() => void useDemoVault()}>
@@ -91,6 +107,10 @@ export default function App() {
             type="button"
             className="gk-btn"
             onClick={() => {
+              setDirTouched(false);
+              setRootName("");
+              setRootStatement("");
+              setRootDir("");
               setNewRootOpen(true);
             }}
           >
@@ -129,7 +149,7 @@ export default function App() {
             </p>
             <div className="gk-ornament-line" style={{ margin: "16px 0" }} />
             <div className="gk-welcome-actions">
-              <button type="button" className="gk-btn primary" onClick={() => void openVault()}>
+              <button type="button" className="gk-btn primary" onClick={() => setOpenVaultUi(true)}>
                 Open vault
               </button>
               <button type="button" className="gk-btn" onClick={() => void useDemoVault()}>
@@ -139,6 +159,10 @@ export default function App() {
                 type="button"
                 className="gk-btn"
                 onClick={() => {
+                  setDirTouched(false);
+                  setRootName("");
+                  setRootStatement("");
+                  setRootDir("");
                   setNewRootOpen(true);
                 }}
               >
@@ -274,6 +298,7 @@ export default function App() {
       )}
 
       <WizardDialog />
+      <OpenVaultDialog open={openVaultUi} onClose={() => setOpenVaultUi(false)} />
 
       {newRootOpen && (
         <div
@@ -285,9 +310,16 @@ export default function App() {
           <div className="gk-modal" onClick={(e) => e.stopPropagation()}>
             <h2>New Root Goal</h2>
             <p style={{ color: "var(--gk-muted)", fontSize: "0.85rem", marginTop: 0 }}>
-              Creates a new Root Goal directory in the current vault
-              {vaultPath ? ` (${vaultPath})` : " (a memory vault will be created if none is open)"}.
-              Every goal needs a <strong>title</strong> (shown on the canvas) and a claim statement.
+              Creates a subdirectory under the current vault
+              {vaultPath ? (
+                <>
+                  {" "}
+                  (<span className="gk-mono">{vaultPath}</span>)
+                </>
+              ) : (
+                " (a browser vault will be created if none is open)"
+              )}
+              . Suggested directory is derived from the title — edit freely.
             </p>
             <label className="gk-label">Goal title</label>
             <input
@@ -298,6 +330,20 @@ export default function App() {
               autoFocus
               disabled={creating}
             />
+            <label className="gk-label">Directory (under vault)</label>
+            <input
+              className="gk-input"
+              value={rootDir}
+              onChange={(e) => {
+                setDirTouched(true);
+                setRootDir(e.target.value);
+              }}
+              placeholder={suggestedDir}
+              disabled={creating}
+            />
+            <div className="gk-mono" style={{ fontSize: "0.72rem", color: "var(--gk-muted)", marginTop: 4 }}>
+              Files will be written to: {rootDir.trim() || suggestedDir}/G1.md
+            </div>
             <label className="gk-label">Goal statement (claim)</label>
             <textarea
               className="gk-textarea"
@@ -321,12 +367,15 @@ export default function App() {
                 disabled={creating || !rootName.trim()}
                 onClick={() => {
                   setCreating(true);
-                  void createRoot(rootName.trim(), rootStatement)
+                  const dir = rootDir.trim() || suggestedDir;
+                  void createRoot(rootName.trim(), rootStatement, dir)
                     .then((ok) => {
                       if (ok) {
                         setNewRootOpen(false);
                         setRootName("");
                         setRootStatement("");
+                        setRootDir("");
+                        setDirTouched(false);
                       }
                     })
                     .finally(() => setCreating(false));

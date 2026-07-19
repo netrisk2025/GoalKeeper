@@ -187,9 +187,17 @@ textarea {
   background: var(--gk-surface);
 }
 
-.gk-canvas {
+.gk-canvas-scroll {
   flex: 1;
   min-height: 0;
+  overflow: auto;
+  position: relative;
+  background: var(--gk-bg);
+}
+
+.gk-canvas {
+  min-width: 100%;
+  min-height: 100%;
   position: relative;
 }
 

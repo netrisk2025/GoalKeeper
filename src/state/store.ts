@@ -31,6 +31,7 @@ import {
   initFs,
   listVaultFiles,
   openMemoryVault,
+  openNamedMemoryVault,
   pickVaultDirectory,
   writeVaultFile,
 } from "../lib/fs";
@@ -40,7 +41,7 @@ export type Theme = "light" | "dark";
 
 interface AppState {
   ready: boolean;
-  backend: "tauri" | "memory";
+  backend: "tauri" | "memory" | "fsa";
   theme: Theme;
   vaultPath: string | null;
   roots: RootGoalSummary[];
@@ -63,10 +64,13 @@ interface AppState {
   bootstrap: () => Promise<void>;
   setTheme: (t: Theme) => void;
   openVault: () => Promise<void>;
+  /** Open a named memory vault or FSA/tauri path already chosen */
+  openVaultAt: (path: string, mode?: "tauri" | "memory" | "fsa") => Promise<void>;
+  openNamedVault: (id: string, opts?: { empty?: boolean; demo?: boolean }) => Promise<void>;
   useDemoVault: () => Promise<void>;
   refreshRoots: () => Promise<void>;
   openRoot: (rootDir: string) => Promise<void>;
-  createRoot: (name: string, statement: string) => Promise<boolean>;
+  createRoot: (name: string, statement: string, rootDir?: string) => Promise<boolean>;
   setMode: (m: AppMode) => void;
   selectNode: (id: string | null) => void;
   updateElement: (
@@ -139,33 +143,54 @@ export const useAppStore = create<AppState>((set, get) => ({
   openVault: async () => {
     try {
       await initFs();
-      const { path, mode } = await pickVaultDirectory();
-      if (!path) {
-        set({ notice: "Vault selection cancelled." });
+      const picked = await pickVaultDirectory();
+      if (!picked) {
+        // Browser without FSA / cancel: UI should show OpenVaultDialog
+        set({ notice: null });
         return;
       }
-      set({ backend: mode, vaultPath: path });
+      await get().openVaultAt(picked.path, picked.mode);
+    } catch (e) {
+      console.error(e);
+      set({ notice: `Open vault failed: ${errMessage(e)}` });
+    }
+  },
+
+  openVaultAt: async (path, mode) => {
+    try {
+      set({ backend: mode ?? getBackend(), vaultPath: path });
       await ensureVaultMeta();
       await get().refreshRoots();
       const roots = get().roots;
       if (roots.length === 0) {
         set({
           structure: null,
-          notice:
-            mode === "memory"
-              ? "In-memory vault ready (browser). Create a Root Goal or use Demo vault for sample data."
-              : "Vault opened. No Root Goals found — create one to begin.",
+          notice: "Vault opened. No Root Goals found — create one to begin.",
         });
         return;
       }
-      // Auto-open first root so the canvas is immediately usable
       await get().openRoot(roots[0].rootDir);
-      set({
-        notice:
-          mode === "memory"
-            ? "Opened in-memory vault (native folder pick requires desktop app)."
-            : `Opened vault with ${roots.length} Root Goal(s).`,
-      });
+      set({ notice: `Opened vault with ${roots.length} Root Goal(s).` });
+    } catch (e) {
+      console.error(e);
+      set({ notice: `Open vault failed: ${errMessage(e)}` });
+    }
+  },
+
+  openNamedVault: async (id, opts) => {
+    try {
+      await initFs();
+      const path = openNamedMemoryVault(id, opts);
+      set({ vaultPath: path, backend: "memory" });
+      await ensureVaultMeta();
+      await get().refreshRoots();
+      const roots = get().roots;
+      if (roots[0]) {
+        await get().openRoot(roots[0].rootDir);
+        set({ notice: `Opened vault “${id}”.` });
+      } else {
+        set({ structure: null, notice: `Vault “${id}” ready — create a Root Goal.` });
+      }
     } catch (e) {
       console.error(e);
       set({ notice: `Open vault failed: ${errMessage(e)}` });
@@ -243,7 +268,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  createRoot: async (name, statement) => {
+  createRoot: async (name, statement, preferredDir) => {
     try {
       await ensureVaultReady();
       await ensureVaultMeta();
@@ -255,16 +280,17 @@ export const useAppStore = create<AppState>((set, get) => ({
             .filter((d) => d && d !== "Evidence" && d !== ".goalkeeper"),
         ),
       ];
-      const created = createRootGoalFiles(name, statement, dirs);
+      const created = createRootGoalFiles(name, statement, dirs, preferredDir);
       for (const f of created.files) {
         await writeVaultFile(f.path, f.text);
       }
-      // Ensure vaultPath is set in UI state
-      const path = (await ensureVaultReady()) || "memory://demo-vault";
+      const path = (await ensureVaultReady()) || "memory://vault";
       set({ vaultPath: get().vaultPath ?? path, backend: getBackend() });
       await get().refreshRoots();
       await get().openRoot(created.rootDir);
-      set({ notice: `Created Root Goal “${name}”.` });
+      set({
+        notice: `Created Root Goal “${name}” in directory ${created.rootDir}/.`,
+      });
       return true;
     } catch (e) {
       console.error(e);

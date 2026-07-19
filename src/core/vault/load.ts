@@ -130,8 +130,10 @@ export function createRootGoalFiles(
   name: string,
   statement: string,
   existingDirs: string[],
+  preferredDir?: string,
 ): { rootDir: string; files: VaultFile[]; summary: RootGoalSummary } {
-  let base = slugify(name);
+  let base = preferredDir?.trim() ? slugify(preferredDir) : slugify(name);
+  if (!base) base = slugify(name) || "Root-Goal";
   let rootDir = base;
   let n = 2;
   while (existingDirs.includes(rootDir)) {
