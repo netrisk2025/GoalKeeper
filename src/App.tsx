@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "./state/store";
-import { IconClose, IconMoon, IconSun } from "./components/Icon";
+import { IconClose } from "./components/Icon";
+import { GearMenu } from "./components/GearMenu";
 import { GsnCanvas } from "./features/structure/GsnCanvas";
 import { DetailPanel } from "./features/structure/DetailPanel";
 import { WizardDialog } from "./features/wizard/WizardDialog";
@@ -11,8 +12,6 @@ export default function App() {
   const bootstrap = useAppStore((s) => s.bootstrap);
   const ready = useAppStore((s) => s.ready);
   const backend = useAppStore((s) => s.backend);
-  const theme = useAppStore((s) => s.theme);
-  const setTheme = useAppStore((s) => s.setTheme);
   const vaultPath = useAppStore((s) => s.vaultPath);
   const roots = useAppStore((s) => s.roots);
   const structure = useAppStore((s) => s.structure);
@@ -36,10 +35,12 @@ export default function App() {
   const setNotice = useAppStore((s) => s.setNotice);
   const setWizardOpen = useAppStore((s) => s.setWizardOpen);
   const revealToken = useAppStore((s) => s.revealToken);
+  const graphEpoch = useAppStore((s) => s.graphEpoch);
 
   const [newRootOpen, setNewRootOpen] = useState(false);
   const [rootName, setRootName] = useState("");
   const [rootStatement, setRootStatement] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     void bootstrap();
@@ -80,27 +81,36 @@ export default function App() {
           </div>
         </div>
         <div className="gk-banner-actions">
-          <button className="gk-btn" onClick={() => void openVault()}>
+          <button type="button" className="gk-btn" onClick={() => void openVault()}>
             Open vault
           </button>
-          <button className="gk-btn" onClick={() => void useDemoVault()}>
+          <button type="button" className="gk-btn" onClick={() => void useDemoVault()}>
             Demo vault
           </button>
-          <button className="gk-btn" onClick={() => setNewRootOpen(true)} disabled={!vaultPath}>
+          <button
+            type="button"
+            className="gk-btn"
+            onClick={() => {
+              setNewRootOpen(true);
+            }}
+          >
             New Root Goal
           </button>
-          <button className="gk-btn" onClick={() => setWizardOpen(true)}>
+          <button type="button" className="gk-btn" onClick={() => setWizardOpen(true)}>
             Wizard
           </button>
-          <button
-            className="gk-btn"
-            title="Toggle theme"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            {theme === "light" ? <IconMoon /> : <IconSun />}
-          </button>
+          <GearMenu />
         </div>
       </header>
+
+      {notice && (
+        <div className="gk-notice" role="status">
+          <span>{notice}</span>
+          <button type="button" className="gk-btn" onClick={() => setNotice(null)} aria-label="Dismiss">
+            <IconClose />
+          </button>
+        </div>
+      )}
 
       {!vaultPath || !structure ? (
         <div className="gk-welcome">
@@ -119,20 +129,34 @@ export default function App() {
             </p>
             <div className="gk-ornament-line" style={{ margin: "16px 0" }} />
             <div className="gk-welcome-actions">
-              <button className="gk-btn primary" onClick={() => void openVault()}>
+              <button type="button" className="gk-btn primary" onClick={() => void openVault()}>
                 Open vault
               </button>
-              <button className="gk-btn" onClick={() => void useDemoVault()}>
+              <button type="button" className="gk-btn" onClick={() => void useDemoVault()}>
                 Open demo vault
+              </button>
+              <button
+                type="button"
+                className="gk-btn"
+                onClick={() => {
+                  setNewRootOpen(true);
+                }}
+              >
+                New Root Goal
               </button>
             </div>
             {vaultPath && roots.length > 0 && (
               <div style={{ marginTop: 20 }}>
                 <div className="gk-panel-header" style={{ paddingLeft: 0 }}>
-                  Root Goals
+                  Root Goals in vault
                 </div>
                 {roots.map((r) => (
-                  <button key={r.rootDir} className="gk-card" onClick={() => void openRoot(r.rootDir)}>
+                  <button
+                    type="button"
+                    key={r.rootDir}
+                    className="gk-card"
+                    onClick={() => void openRoot(r.rootDir)}
+                  >
                     <div className="gk-mono">{r.rootGsnId}</div>
                     <strong>{r.name}</strong>
                   </button>
@@ -159,6 +183,7 @@ export default function App() {
             <div className="gk-modes">
               {(["structure", "evidence", "validation", "export"] as const).map((m) => (
                 <button
+                  type="button"
                   key={m}
                   className={`gk-btn ${mode === m ? "active" : ""}`}
                   onClick={() => setMode(m)}
@@ -169,19 +194,15 @@ export default function App() {
               ))}
             </div>
             <span style={{ flex: 1 }} />
-            <button className="gk-btn primary" disabled={!contentDirty} onClick={() => void saveContent()}>
+            <button
+              type="button"
+              className="gk-btn primary"
+              disabled={!contentDirty}
+              onClick={() => void saveContent()}
+            >
               Save content
             </button>
           </div>
-
-          {notice && (
-            <div className="gk-notice">
-              <span>{notice}</span>
-              <button className="gk-btn" onClick={() => setNotice(null)} aria-label="Dismiss">
-                <IconClose />
-              </button>
-            </div>
-          )}
 
           <div className="gk-main">
             <aside className="gk-panel">
@@ -190,6 +211,7 @@ export default function App() {
                 .sort((a, b) => a.gsnId.localeCompare(b.gsnId))
                 .map((el) => (
                   <button
+                    type="button"
                     key={el.gsnId}
                     className={`gk-card ${selectedId === el.gsnId ? "selected" : ""}`}
                     onClick={() => selectNode(el.gsnId)}
@@ -209,10 +231,10 @@ export default function App() {
               {mode === "structure" && (
                 <>
                   <div className="gk-canvas-toolbar">
-                    <button className="gk-btn primary" onClick={() => void saveLayout()}>
+                    <button type="button" className="gk-btn primary" onClick={() => void saveLayout()}>
                       Save Layout
                     </button>
-                    <button className="gk-btn" onClick={() => restoreLastSaved()}>
+                    <button type="button" className="gk-btn" onClick={() => restoreLastSaved()}>
                       Last Saved
                     </button>
                     <span className="gk-mono" style={{ color: "var(--gk-muted)" }}>
@@ -224,6 +246,7 @@ export default function App() {
                     positions={workingPositions}
                     selectedId={selectedId}
                     revealToken={revealToken}
+                    graphEpoch={graphEpoch}
                     errorIds={errorIds}
                     onSelect={selectNode}
                     onDrag={setPosition}
@@ -253,33 +276,62 @@ export default function App() {
       <WizardDialog />
 
       {newRootOpen && (
-        <div className="gk-modal-backdrop">
-          <div className="gk-modal">
+        <div
+          className="gk-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !creating && setNewRootOpen(false)}
+        >
+          <div className="gk-modal" onClick={(e) => e.stopPropagation()}>
             <h2>New Root Goal</h2>
+            <p style={{ color: "var(--gk-muted)", fontSize: "0.85rem", marginTop: 0 }}>
+              Creates a new Root Goal directory in the current vault
+              {vaultPath ? ` (${vaultPath})` : " (a memory vault will be created if none is open)"}.
+            </p>
             <label className="gk-label">Name</label>
-            <input className="gk-input" value={rootName} onChange={(e) => setRootName(e.target.value)} />
+            <input
+              className="gk-input"
+              value={rootName}
+              onChange={(e) => setRootName(e.target.value)}
+              placeholder="e.g. System is acceptably safe"
+              autoFocus
+              disabled={creating}
+            />
             <label className="gk-label">Goal statement</label>
             <textarea
               className="gk-textarea"
               value={rootStatement}
               onChange={(e) => setRootStatement(e.target.value)}
+              placeholder="Optional claim text"
+              disabled={creating}
             />
             <div className="gk-modal-actions">
-              <button className="gk-btn" onClick={() => setNewRootOpen(false)}>
+              <button
+                type="button"
+                className="gk-btn"
+                disabled={creating}
+                onClick={() => setNewRootOpen(false)}
+              >
                 Cancel
               </button>
               <button
+                type="button"
                 className="gk-btn primary"
-                disabled={!rootName.trim()}
+                disabled={creating || !rootName.trim()}
                 onClick={() => {
-                  void createRoot(rootName.trim(), rootStatement).then(() => {
-                    setNewRootOpen(false);
-                    setRootName("");
-                    setRootStatement("");
-                  });
+                  setCreating(true);
+                  void createRoot(rootName.trim(), rootStatement)
+                    .then((ok) => {
+                      if (ok) {
+                        setNewRootOpen(false);
+                        setRootName("");
+                        setRootStatement("");
+                      }
+                    })
+                    .finally(() => setCreating(false));
                 }}
               >
-                Create
+                {creating ? "Creating…" : "Create"}
               </button>
             </div>
           </div>
@@ -299,7 +351,7 @@ function EvidenceMode() {
       {solutions.length === 0 && <p style={{ color: "var(--gk-muted)" }}>No Solution nodes.</p>}
       {solutions.map((s) => (
         <div key={s.gsnId} className="gk-card" style={{ width: "100%", cursor: "default" }}>
-          <button className="gk-btn" onClick={() => selectNode(s.gsnId)}>
+          <button type="button" className="gk-btn" onClick={() => selectNode(s.gsnId)}>
             {s.gsnId}
           </button>{" "}
           <strong>{s.name}</strong>
@@ -311,9 +363,7 @@ function EvidenceMode() {
               s.hasEvidence.map((e) => (
                 <div key={e} className="gk-mono" style={{ fontSize: "0.75rem" }}>
                   Evidence: {e}
-                  {structure.evidence.get(e)
-                    ? ` — ${structure.evidence.get(e)!.kind}`
-                    : ""}
+                  {structure.evidence.get(e) ? ` — ${structure.evidence.get(e)!.kind}` : ""}
                 </div>
               ))
             )}
@@ -340,7 +390,7 @@ function ValidationMode() {
           <strong>{f.severity}</strong> <span className="gk-mono">{f.code}</span>
           <div>{f.message}</div>
           {f.nodeId && (
-            <button className="gk-btn" style={{ marginTop: 6 }} onClick={() => selectNode(f.nodeId!)}>
+            <button type="button" className="gk-btn" style={{ marginTop: 6 }} onClick={() => selectNode(f.nodeId!)}>
               Go to {f.nodeId}
             </button>
           )}
@@ -359,13 +409,14 @@ function ExportMode() {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       <div className="gk-canvas-toolbar">
-        <button className={`gk-btn ${tab === "md" ? "active" : ""}`} onClick={() => setTab("md")}>
+        <button type="button" className={`gk-btn ${tab === "md" ? "active" : ""}`} onClick={() => setTab("md")}>
           Markdown
         </button>
-        <button className={`gk-btn ${tab === "json" ? "active" : ""}`} onClick={() => setTab("json")}>
+        <button type="button" className={`gk-btn ${tab === "json" ? "active" : ""}`} onClick={() => setTab("json")}>
           JSON
         </button>
         <button
+          type="button"
           className="gk-btn primary"
           onClick={() => {
             const blob = new Blob([tab === "md" ? md : json], {

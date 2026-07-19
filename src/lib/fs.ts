@@ -9,6 +9,7 @@ export type FsBackend = "tauri" | "memory";
 let backend: FsBackend = "memory";
 let vaultRoot: string | null = null;
 const memory = new Map<string, string>();
+let demoSeeded = false;
 
 export function getBackend(): FsBackend {
   return backend;
@@ -18,25 +19,40 @@ export function getVaultRoot(): string | null {
   return vaultRoot;
 }
 
+export function isTauriRuntime(): boolean {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+}
+
 export async function initFs(): Promise<FsBackend> {
   try {
-    await import("@tauri-apps/api/core");
-    // Only treat as Tauri if invoke exists in a real webview
-    if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+    if (isTauriRuntime()) {
+      await import("@tauri-apps/api/core");
       backend = "tauri";
       return backend;
     }
   } catch {
-    // fall through
+    // fall through to memory
   }
   backend = "memory";
-  seedDemoVault();
   return backend;
 }
 
-function seedDemoVault(): void {
-  if (memory.size > 0) return;
+/** Seed (or re-seed) the in-memory demo vault and point vaultRoot at it. */
+export function seedDemoVault(force = false): string {
+  if (force) {
+    memory.clear();
+    demoSeeded = false;
+  }
+  if (!demoSeeded) {
+    writeDemoContents();
+    demoSeeded = true;
+  }
   vaultRoot = "memory://demo-vault";
+  backend = "memory";
+  return vaultRoot;
+}
+
+function writeDemoContents(): void {
   const g1 = `---
 gk_schema: 1
 gk_type: GsnGoal
@@ -168,38 +184,62 @@ Integration test suite passed for hazard H1 mitigations.
   );
 }
 
-export async function pickVaultDirectory(): Promise<string | null> {
-  if (backend === "tauri") {
-    const { open } = await import("@tauri-apps/plugin-dialog");
-    const selected = await open({ directory: true, multiple: false });
-    if (typeof selected === "string") {
-      vaultRoot = selected;
-      return selected;
+/** Open a directory picker (Tauri) or fall back to the in-memory demo vault (browser). */
+export async function pickVaultDirectory(): Promise<{ path: string; mode: "tauri" | "memory" }> {
+  if (backend === "tauri" || isTauriRuntime()) {
+    backend = "tauri";
+    try {
+      const { open } = await import("@tauri-apps/plugin-dialog");
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: "Select GoalKeeper vault directory",
+      });
+      if (typeof selected === "string" && selected.length > 0) {
+        vaultRoot = selected;
+        return { path: selected, mode: "tauri" };
+      }
+      // User cancelled
+      return { path: "", mode: "tauri" };
+    } catch (e) {
+      console.error("Tauri dialog failed, falling back to memory vault", e);
+      const path = seedDemoVault(true);
+      return { path, mode: "memory" };
     }
-    return null;
   }
-  // memory: always use demo vault
-  seedDemoVault();
-  return vaultRoot;
+  const path = seedDemoVault(false);
+  return { path, mode: "memory" };
 }
 
-export async function setVaultRoot(path: string): Promise<void> {
-  vaultRoot = path;
-  if (backend === "memory") {
-    seedDemoVault();
+export async function openMemoryVault(forceReseed = false): Promise<string> {
+  return seedDemoVault(forceReseed);
+}
+
+/** Ensure a vault is available for writes (auto memory vault if none). */
+export async function ensureVaultReady(): Promise<string> {
+  if (vaultRoot) return vaultRoot;
+  if (backend === "tauri" && isTauriRuntime()) {
+    throw new Error("No vault open. Use Open vault to choose a directory.");
   }
+  return seedDemoVault(false);
 }
 
 export async function listVaultFiles(): Promise<VaultFile[]> {
   if (!vaultRoot) return [];
-  if (backend === "memory") {
+  if (backend === "memory" || vaultRoot.startsWith("memory://")) {
     return [...memory.entries()].map(([path, text]) => ({ path, text }));
   }
   const { readDir, readTextFile } = await import("@tauri-apps/plugin-fs");
   const out: VaultFile[] = [];
   async function walk(rel: string): Promise<void> {
     const abs = rel ? `${vaultRoot}/${rel}` : vaultRoot!;
-    const entries = await readDir(abs);
+    let entries;
+    try {
+      entries = await readDir(abs);
+    } catch (e) {
+      console.error("readDir failed", abs, e);
+      return;
+    }
     for (const e of entries) {
       const name = e.name ?? "";
       if (name.startsWith(".") && name !== ".goalkeeper") continue;
@@ -208,8 +248,12 @@ export async function listVaultFiles(): Promise<VaultFile[]> {
         if (name === ".obsidian") continue;
         await walk(childRel);
       } else if (name.endsWith(".md") || name.endsWith(".json")) {
-        const text = await readTextFile(`${vaultRoot}/${childRel}`);
-        out.push({ path: childRel.replace(/\\/g, "/"), text });
+        try {
+          const text = await readTextFile(`${vaultRoot}/${childRel}`);
+          out.push({ path: childRel.replace(/\\/g, "/"), text });
+        } catch (err) {
+          console.error("readTextFile failed", childRel, err);
+        }
       }
     }
   }
@@ -219,7 +263,7 @@ export async function listVaultFiles(): Promise<VaultFile[]> {
 
 export async function writeVaultFile(relPath: string, text: string): Promise<void> {
   const path = relPath.replace(/\\/g, "/");
-  if (backend === "memory") {
+  if (backend === "memory" || (vaultRoot && vaultRoot.startsWith("memory://"))) {
     memory.set(path, text);
     return;
   }
@@ -237,7 +281,7 @@ export async function writeVaultFile(relPath: string, text: string): Promise<voi
 
 export async function readVaultFile(relPath: string): Promise<string | null> {
   const path = relPath.replace(/\\/g, "/");
-  if (backend === "memory") {
+  if (backend === "memory" || (vaultRoot && vaultRoot.startsWith("memory://"))) {
     return memory.get(path) ?? null;
   }
   if (!vaultRoot) return null;
@@ -250,6 +294,7 @@ export async function readVaultFile(relPath: string): Promise<string | null> {
 }
 
 export async function ensureVaultMeta(): Promise<void> {
+  await ensureVaultReady();
   const existing = await readVaultFile(".goalkeeper/vault.json");
   if (!existing) {
     await writeVaultFile(
