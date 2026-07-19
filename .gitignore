@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-ssr/
+src-tauri/target/
+.env
+.DS_Store
+*.log
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea
+.vite
+coverage/

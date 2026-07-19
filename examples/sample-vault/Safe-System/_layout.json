@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "rootGsnId": "G1",
+  "tool": "goalkeeper",
+  "viewport": { "x": 0, "y": 0, "zoom": 1 },
+  "nodes": {
+    "G1": { "x": 120, "y": 40 },
+    "S1": { "x": 120, "y": 160 },
+    "G2": { "x": 40, "y": 280 },
+    "Sn1": { "x": 280, "y": 280 },
+    "C1": { "x": 360, "y": 40 }
+  },
+  "display": { "showEvidenceBadges": true }
+}

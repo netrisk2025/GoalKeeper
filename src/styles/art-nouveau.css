@@ -1,0 +1,53 @@
+/* Subtle Art Nouveau chrome — keep canvas clean */
+
+.gk-filigree-corner {
+  position: relative;
+}
+
+.gk-filigree-corner::before,
+.gk-filigree-corner::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  opacity: 0.35;
+  border: 1.5px solid var(--gk-gold);
+  border-radius: 40% 0;
+}
+
+.gk-filigree-corner::before {
+  top: 6px;
+  left: 6px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.gk-filigree-corner::after {
+  bottom: 6px;
+  right: 6px;
+  border-left: none;
+  border-top: none;
+  transform: rotate(180deg);
+}
+
+.gk-ornament-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gk-gold-soft),
+    var(--gk-gold),
+    var(--gk-gold-soft),
+    transparent
+  );
+  opacity: 0.7;
+}
+
+.gk-empty-flourish {
+  border: 1px solid var(--gk-line);
+  border-radius: 48% 52% 50% 50% / 55% 48% 52% 45%;
+  padding: var(--gk-sp-5);
+  background: radial-gradient(ellipse at 30% 20%, var(--gk-gold-soft), transparent 55%),
+    var(--gk-surface);
+}
