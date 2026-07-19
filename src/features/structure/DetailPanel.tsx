@@ -79,8 +79,13 @@ export function DetailPanel() {
           </div>
         )}
 
-        <label className="gk-label">Name</label>
-        <input className="gk-input" value={name} onChange={(e) => setName(e.target.value)} />
+        <label className="gk-label">Title</label>
+        <input
+          className="gk-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Short title on the canvas"
+        />
         <label className="gk-label">Statement</label>
         <textarea
           className="gk-textarea"

@@ -287,8 +287,9 @@ export default function App() {
             <p style={{ color: "var(--gk-muted)", fontSize: "0.85rem", marginTop: 0 }}>
               Creates a new Root Goal directory in the current vault
               {vaultPath ? ` (${vaultPath})` : " (a memory vault will be created if none is open)"}.
+              Every goal needs a <strong>title</strong> (shown on the canvas) and a claim statement.
             </p>
-            <label className="gk-label">Name</label>
+            <label className="gk-label">Goal title</label>
             <input
               className="gk-input"
               value={rootName}
@@ -297,12 +298,12 @@ export default function App() {
               autoFocus
               disabled={creating}
             />
-            <label className="gk-label">Goal statement</label>
+            <label className="gk-label">Goal statement (claim)</label>
             <textarea
               className="gk-textarea"
               value={rootStatement}
               onChange={(e) => setRootStatement(e.target.value)}
-              placeholder="Optional claim text"
+              placeholder="The full claim this argument will support"
               disabled={creating}
             />
             <div className="gk-modal-actions">

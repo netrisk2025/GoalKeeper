@@ -1,8 +1,10 @@
-/** Markdown parse/serialize with Obsidian wikilinks (Architecture §4.4). */
+/** Markdown parse/serialize with Obsidian wikilinks (Architecture §4.4).
+ *  Browser-safe — no Node Buffer / gray-matter.
+ */
 
-import matter from "gray-matter";
 import type { ElementType, EvidenceKind, EvidenceNote, GsnElement, GsnType } from "../model/types";
 import { GSN_TYPES, statementProp } from "../model/types";
+import { parseFrontmatter, stringifyFrontmatter } from "./frontmatter";
 
 const WIKILINK_RE = /\[\[([^\]]+)\]\]/g;
 
@@ -39,7 +41,7 @@ function isGsnType(t: string): t is GsnType {
 }
 
 export function parseElementFile(filePath: string, text: string): GsnElement | EvidenceNote {
-  const { data, content } = matter(text);
+  const { data, content } = parseFrontmatter(text);
   const gkType = String(data.gk_type ?? data.gkType ?? "GsnGoal");
 
   if (gkType === "Evidence") {
@@ -123,7 +125,6 @@ function extractBodyStatement(content: string, title: string): string {
     }
   }
   const text = body.join("\n").trim();
-  // Avoid echoing title-only
   if (text === title) return "";
   return text;
 }
@@ -162,16 +163,9 @@ export function serializeElement(el: GsnElement): string {
   }
   if (el.created) fm.created = el.created;
   fm.modified = el.modified ?? new Date().toISOString();
-
-  // Also mirror type-specific statement key for SSTPA familiarity
   fm[statementProp(el.gkType)] = el.statement;
 
-  const bodyParts = [
-    `# ${el.gsnId} — ${el.name}`,
-    "",
-    el.statement || "",
-    "",
-  ];
+  const bodyParts = [`# ${el.gsnId} — ${el.name}`, "", el.statement || "", ""];
   if (el.supportedBy.length > 0) {
     bodyParts.push("## Supported By", ...el.supportedBy.map((id) => `- [[${id}]]`), "");
   }
@@ -182,7 +176,7 @@ export function serializeElement(el: GsnElement): string {
     bodyParts.push("## Evidence", ...el.hasEvidence.map((id) => `- [[${id}]]`), "");
   }
 
-  return matter.stringify(bodyParts.join("\n").trimEnd() + "\n", fm);
+  return stringifyFrontmatter(bodyParts.join("\n").trimEnd() + "\n", fm);
 }
 
 export function serializeEvidence(ev: EvidenceNote): string {
@@ -197,7 +191,7 @@ export function serializeEvidence(ev: EvidenceNote): string {
   if (ev.created) fm.created = ev.created;
   fm.modified = ev.modified ?? new Date().toISOString();
   const body = `# ${ev.name}\n\n${ev.statement || ""}\n`;
-  return matter.stringify(body, fm);
+  return stringifyFrontmatter(body, fm);
 }
 
 export function isElementType(t: string): t is ElementType {
@@ -205,8 +199,6 @@ export function isElementType(t: string): t is ElementType {
 }
 
 export function allocateGsnId(type: GsnType, existing: Iterable<string>): string {
-  const prefix = type === "GsnSolution" ? "Sn" : type.replace("Gsn", "").charAt(0);
-  // Goals G, Strategy S, Solution Sn, Context C, Assumption A, Justification J
   const p =
     type === "GsnGoal"
       ? "G"
@@ -219,7 +211,6 @@ export function allocateGsnId(type: GsnType, existing: Iterable<string>): string
             : type === "GsnAssumption"
               ? "A"
               : "J";
-  void prefix;
   let max = 0;
   const re = new RegExp(`^${p}(\\d+)$`);
   for (const id of existing) {
