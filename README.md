@@ -24,6 +24,22 @@ npm run dev
 
 Open http://localhost:1420 → **Open demo vault**.
 
+### “Too many open files” / EMFILE
+
+On many Linux desktops the **soft** file-descriptor limit defaults to **1024**. Vite and Tauri open many watchers and hit `EMFILE` / `Too many open files`.
+
+`npm run dev` and `npm run tauri:dev` raise the limit via `scripts/with-raised-nofile.sh` (no root required when the hard limit is higher).
+
+If errors persist in a bare shell (or a parent shell already capped the hard limit):
+
+```bash
+ulimit -S -n 65536
+# optional permanent: add the same line to ~/.bashrc
+npm run dev
+```
+
+Note: `ulimit -n 1024` (without `-S`) can lower **both** soft and hard in some shells, after which raising is not permitted without a new login. Prefer `ulimit -S -n …`.
+
 ## Desktop (Tauri)
 
 ```bash

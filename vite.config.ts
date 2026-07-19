@@ -23,8 +23,21 @@ export default defineConfig({
           port: 1421,
         }
       : undefined,
+    // Minimize inotify/FD use: default soft ulimit is often 1024 (EMFILE).
+    // Only watch sources; ignore heavy / non-source trees.
     watch: {
-      ignored: ["**/src-tauri/**"],
+      ignored: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/dist-ssr/**",
+        "**/.git/**",
+        "**/src-tauri/**",
+        "**/Docs/**",
+        "**/Assets/**",
+        "**/examples/**",
+        "**/coverage/**",
+        "**/.vite/**",
+      ],
     },
   },
   envPrefix: ["VITE_", "TAURI_"],
