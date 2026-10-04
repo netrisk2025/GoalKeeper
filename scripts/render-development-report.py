@@ -64,7 +64,7 @@ integration=[
 ]
 repo='https://github.com/netrisk2025/GoalKeeper'
 branch=data.get('branch','gsn-v3-presentation')
-refs=[('SRS and 52 requirement records','Docs/SRS_GoalKeeper.md'),('Verification procedures','Docs/VERIFICATION_GoalKeeper.md'),('Requirement verification observations','Docs/VERIFICATION_RESULTS_GoalKeeper.md'),('Requirement dispositions','Docs/REQUIREMENT_DISPOSITION.md'),('Architecture and integration mapping','Docs/ARCHITECTURE_GoalKeeper.md'),('FireSat source storyboard','Docs/FireSat-Storyboard.md'),('Source snapshot','examples/firesat-vault/Artifacts/loss-source-snapshot.json'),('Dependency notice verification','Docs/License-Packaging-Verification.md')]
+refs=[('SRS and 52 requirement records','Docs/SRS_GoalKeeper.md'),('Verification procedures','Docs/VERIFICATION_GoalKeeper.md'),('Requirement verification observations','Docs/VERIFICATION_RESULTS_GoalKeeper.md'),('Requirement dispositions','Docs/REQUIREMENT_DISPOSITION.md'),('Architecture and integration mapping','Docs/ARCHITECTURE_GoalKeeper.md'),('FireSat source storyboard','Docs/FireSat-Storyboard.md'),('Source snapshot','examples/firesat-vault/Artifacts/loss-source-snapshot.json'),('Dependency notice verification','Docs/License-Packaging-Verification.md'),('Final software verification log','Docs/report/final-verification.txt'),('Native compilation log','Docs/report/native-compile-verification.txt'),('Browser observations and limits','Docs/report/browser-verification.json')]
 # PDF drawing helpers use explicit boxes to make page breaks and whitespace stable.
 W,H=A4;c=canvas.Canvas(str(out/'GoalKeeper-Development-Report.pdf'),pagesize=A4)
 c.setTitle('GoalKeeper — GSN presentation development report');c.setAuthor('GoalKeeper project')
@@ -102,7 +102,7 @@ def section(title,body,x,y,w):
 
 def page_end():c.showPage()
 
-y=frame('DEVELOPMENT REPORT','A readable GSN assurance case','Standalone GoalKeeper revision and FireSat authoring storyboard')
+y=frame('DEVELOPMENT REPORT','A readable GSN assurance case','GoalKeeper '+data.get('version','0.2.0')+' · standalone revision and FireSat storyboard')
 y=para('GoalKeeper now gives the assurance argument the primary presentation. The revised baseline replaces the inherited KerML-first exception with GSN v3 core notation, while preserving a requested alternate engineering view.',44,y,W-88)-20
 # numbers band
 for i,(n,label) in enumerate([('52','requirements'),('18','GSN elements'),('2','source notes'),('5','open claims')]):
@@ -115,7 +115,7 @@ y=section('Applicability','This delivery addresses the GSN v3 core profile in Pa
 para('Verification status: '+html.escape(data['releaseStatus']),44,y,W-88,'small');page_end()
 
 y=frame('SOURCE AND EVIDENCE','Start with the recorded Loss','The example is derived from the prototype Loss Tool, with scope and limits carried into the case.')
-y=section('Loss of authentic fire reports','The source Asset is Fire detection reports (DEMO_AST_FIRE_REPORTS); the local Loss ID is loss, with illustrative HID DEMO_LOSS. The modeled scope is Fire Detection Payload SYS_1.1.2_0, Payload Operating Environment ENV_1.1.2_1, and the Standby and Imaging States.',44,y,W-88)
+y=section('Loss of authentic fire reports','The resulting case contains 18 GSN elements, 17 core links and two evidence-note references. The source Asset is Fire detection reports (DEMO_AST_FIRE_REPORTS); the local Loss ID is loss, with illustrative HID DEMO_LOSS. The modeled scope is Fire Detection Payload SYS_1.1.2_0, Payload Operating Environment ENV_1.1.2_1, and the Standby and Imaging States.',44,y,W-88)
 y=table([('Source','What it establishes')]+[(a+'\n'+b,c_) for a,b,c_ in provenance],44,y,W-88,[1.3,1.8]);y-=18
 y=section('What the source does not establish','The prototype records 25 nodes and 25 edges. Its nine terminal routes are algorithm results, not independent attacks or probabilities. Simulated UUIDs and illustrative metric inputs are not operational security evidence. The Environment context and tailored-out retired-interface route are excluded by the source route algorithm.',44,y,W-88)
 y=section('Five claims intentionally remain open','G3 processing, G4 sensor provenance, G5 classification, G6 freshness and G9 authority acceptance retain their undeveloped diamonds. Source notes support traceability and decision-record claims; they do not demonstrate enforcement, control effectiveness or accepted residual exposure.',44,y,W-88)
@@ -150,13 +150,13 @@ else:y-=8
 for title,path in refs:
  y=para(f'<link href="{repo}/blob/{branch}/{path}" color="{TEAL}">{html.escape(title)}</link>',44,y,W-88,'small')-5
 page_end()
-shots=[shot for shot in data.get('screenshots',[]) if (root/shot['path']).exists()]
+shots=[shot for shot in data.get('screenshots',[]) if shot.get('pdf',True) and (root/shot['path']).exists()]
 for idx in range(0,len(shots),2):
  frame('IMPLEMENTED APPLICATION','Review in the workspace','Observed application views; the storyboard plates retain the readable claim details.')
  for slot,shot in enumerate(shots[idx:idx+2]):
   bottom=402 if slot==0 else 76
   image_fit(root/shot['path'],44,bottom,W-88,280)
-  para(html.escape(shot['title']+' — '+shot.get('caption','')),44,bottom-8,W-88,'caption')
+  para(html.escape(shot['title']+' - '+shot.get('caption','')),44,bottom-8,W-88,'caption')
  page_end()
 c.save()
 

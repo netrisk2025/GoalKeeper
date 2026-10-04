@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-04",
+  "implementationCommit": "6bc0a0821e748662955a0e44968de9588fc8c8f6",
+  "environment": "Codex in-app browser; local production Vite preview; 1440x900 observed viewport",
+  "checks": [
+    {
+      "name": "Core presentation",
+      "result": "PASS",
+      "detail": "18 FireSat nodes; 16px SVG statement text; canvas/workspace widths both 1440px with panels closed."
+    },
+    {
+      "name": "Long text and shapes",
+      "result": "PASS",
+      "detail": "16 charts, 144 nodes, 1,314 text lines; no corner of a text rectangle outside its symbol; all statements retained after whitespace normalization. See notation-browser-results.json."
+    },
+    {
+      "name": "Boundary dragging",
+      "result": "PASS",
+      "detail": "Outward requested (-60, -70) px; observed (-60.000015, -70.166687) px after release. Reverse returned to identical original screen rectangle. Subpixel rasterization tolerance below 1px."
+    },
+    {
+      "name": "Saved branch view",
+      "result": "PASS",
+      "detail": "Save Layout in G4 branch; change to Whole argument and zoom out; Last Saved restored Branch G4, 2 nodes, 100% zoom and saved positions."
+    },
+    {
+      "name": "Draft editor",
+      "result": "PASS",
+      "detail": "Typed statement remained in textarea after toggling Undeveloped off and on."
+    },
+    {
+      "name": "Evidence and validation navigation",
+      "result": "PASS",
+      "detail": "Two source disclosures include source metadata. Sn1 and Go to G4 open Structure with target inspector. Validation shows 0 ERROR, 5 WARNING, 5 INFO."
+    },
+    {
+      "name": "Model popup",
+      "result": "PASS",
+      "detail": "Keyboard Enter launches View menu and model popup. Contains 18 model nodes; starts at 23% fit. Focus enters Close; reverse Tab wraps to Zoom in; forward Tab returns to Close. Escape closes and returns focus to View."
+    },
+    {
+      "name": "Theme persistence",
+      "result": "PASS",
+      "detail": "Dark theme applied and remained dark after page reload. Light mode restored for final presentation."
+    },
+    {
+      "name": "JSON report preview",
+      "result": "PASS",
+      "detail": "Preview contains 18 elements, 19 relationships (17 GSN + 2 evidence), 2 evidence notes, provenance, layout and findings."
+    },
+    {
+      "name": "Console errors",
+      "result": "PASS",
+      "detail": "No browser error entries in final inspected production session."
+    }
+  ],
+  "qualificationLimits": [
+    "The browser download-event hook timed out; completion of a saved SVG download is unqualified. SVG serialization and production-renderer fixtures pass automated checks.",
+    "Native confirmation dialogs could not be reliably controlled through the browser automation interface. Four jsdom App-level cancellation tests verify handlers preserve dirty data.",
+    "Native desktop rendering, directory-picker behavior and saved-vault reopen remain manual qualification work; cargo test compiles but contains zero Rust tests.",
+    "Viewport override calls did not alter observed 1440x900 DOM dimensions; no other resolution is claimed as browser-qualified.",
+    "Runtime network traffic was not captured; bundled assets and source have no external service dependency, but exhaustive runtime network qualification remains open."
+  ]
+}

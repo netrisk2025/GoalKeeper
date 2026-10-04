@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-04",
+  "branch": "gsn-v3-presentation",
+  "releaseStatus": "Automated and observed browser checks passed",
+  "summary": "GoalKeeper 0.2.0 passed 161 automated tests in 15 files, type checking and production build. Observed browser checks passed at 1440\u00d7900. Native compilation passed with 0 tests; native desktop runtime remains unqualified. Tested implementation: 6bc0a0821e74.",
+  "checks": [
+    {
+      "name": "Automated software checks",
+      "status": "PASS",
+      "detail": "161 tests / 15 files; TypeScript checks; production build. Final npm run verify log retained. Vitest 5.0.3."
+    },
+    {
+      "name": "Browser GSN geometry",
+      "status": "PASS",
+      "detail": "16 charts, 144 nodes and 1,314 text lines; 0 text outside shapes. Complete text retained at 16px, including long tokens and identifiers."
+    },
+    {
+      "name": "Observed browser workflows",
+      "status": "PASS",
+      "detail": "At 1440\u00d7900, canvas uses 100% workspace width. Pan/drag, saved branch restore, theme reload, pop-up focus, evidence navigation and validation were observed. Keyboard menu launch and Escape focus return passed; 0 browser errors."
+    },
+    {
+      "name": "Native compilation",
+      "status": "PASS",
+      "detail": "cargo test --offline compiled GoalKeeper 0.2.0 successfully; library, binary and doc harnesses contained 0 tests. This is not native UI qualification."
+    },
+    {
+      "name": "Dependency/build notices",
+      "status": "PASS",
+      "detail": "13 npm packages; 10 source archives; 11 embedded notices; 9 ELK file hashes; 39 distribution files. npm audit: 0 known vulnerabilities at the recorded run."
+    },
+    {
+      "name": "Native desktop runtime",
+      "status": "PARTIAL",
+      "detail": "Native picker, physical-vault reopen, application restart and actual desktop interaction were not qualified. Mocked adapter coverage is identified separately."
+    },
+    {
+      "name": "SVG delivery through browser",
+      "status": "PARTIAL",
+      "detail": "Serializer tests and reopened renderer SVG figures pass. In-app-browser download completion was not observable; no successful download is asserted."
+    },
+    {
+      "name": "Runtime privacy observation",
+      "status": "PARTIAL",
+      "detail": "Offline/source boundary reviewed. Network observation was unavailable through the browser-control API; no measured no-transmission result is claimed."
+    }
+  ],
+  "limitations": [
+    "GSN v3 core Part 1 \u00a72 profile only; pattern, modular, Assurance Claim Point and dialectic extensions are not implemented.",
+    "The alternate SysML/KerML-style projection is illustrative, read-only and not parser-verified language interchange.",
+    "The FireSat argument is an illustrative draft. Operational control effectiveness, accepted residual exposure and authority approval are not established.",
+    "Native desktop runtime qualification is distinct from browser and pure-core tests; unexecuted procedures are not reported as passed.",
+    "Local file replacement does not provide a transaction across all Markdown files; a future SSTPA adapter must retain host authorization and commit validation.",
+    "Browser SVG-download completion and runtime network activity were not observable through the available browser-control interface; these are explicit qualification gaps."
+  ],
+  "screenshots": [
+    {
+      "path": "Docs/screenshots/firesat-branch.jpg",
+      "title": "Primary GSN review",
+      "caption": "Selected G4 sensor-provenance branch with readable statement, undeveloped marker and source limitation context."
+    },
+    {
+      "path": "Docs/screenshots/model-popup.jpg",
+      "title": "Alternate model on request",
+      "caption": "The same 18-element argument appears in the View-menu pop-up; model text is explicitly illustrative."
+    },
+    {
+      "path": "Docs/screenshots/firesat-evidence.jpg",
+      "title": "Evidence with its limits",
+      "caption": "Source record details, provenance and artifact references remain visible to the reviewer."
+    },
+    {
+      "path": "Docs/screenshots/firesat-validation.jpg",
+      "title": "Incomplete work remains visible",
+      "caption": "0 structural errors, 5 unsupported-claim warnings and 5 undeveloped information findings."
+    },
+    {
+      "path": "Docs/screenshots/firesat-dark.jpg",
+      "title": "Dark-theme review",
+      "caption": "The GSN symbol contract remains the same in dark mode; theme persistence was observed on browser reload.",
+      "pdf": false
+    }
+  ],
+  "requirementEvidence": "All 52 SRS rows have recorded observations: 42 PASS and 10 PARTIAL, including aggregate parents. Partial rows preserve native/runtime and browser-delivery limits; they are not failed automated tests. See the linked requirement verification matrix and final command logs.",
+  "version": "0.2.0",
+  "testedCommit": "6bc0a0821e748662955a0e44968de9588fc8c8f6"
+}

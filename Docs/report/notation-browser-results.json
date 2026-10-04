@@ -1,0 +1,7 @@
+{
+  "charts": 16,
+  "failures": [],
+  "method": "Browser text rectangles; corner containment using corresponding rect/parallelogram/ellipse/circle/rounded-context geometry",
+  "nodes": 144,
+  "textLines": 1314
+}

@@ -15,7 +15,7 @@ Date: 2026-10-04. Scope: GoalKeeper JavaScript production dependency inventory a
 | Production npm package inventory | 13 packages with original notice files |
 | Source/notices payload | 22,197,348 bytes before npm notice files/index |
 | Network access during verification | None; script uses only repository files |
-| Built distribution copy verification | Run `node scripts/verify-licenses.mjs --dist` after the final Vite build; record that result with the development build evidence |
+| Built distribution copy verification | PASS: all 39 files verified byte-for-byte under `dist/licenses/` in the final production build; see `report/final-verification.txt` |
 
 The source archives and embedded notices were reused without modification from the matching ELK.js 0.12.0 license package in the Loss Tool prototype. `scripts/elk-sources.json` pins the original upstream URLs/revisions and SHA-256 values. GoalKeeper's installed ELK files were checked independently against that manifest. No prototype application copyright statement or application dependency inventory was reused.
 
