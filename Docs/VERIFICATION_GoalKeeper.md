@@ -1,6 +1,6 @@
 # GoalKeeper verification procedures
 
-Baseline: SRS v1.0, 2026-10-04. Prepared after the SRS and before implementation. Procedures are a plan; no PASS result is implied by this document.
+Baseline: SRS v1.1, 2026-10-04. Prepared after the SRS and before implementation. Procedures are a plan; no PASS result is implied by this document.
 
 ## Environment and evidence
 
@@ -40,6 +40,8 @@ For each row: reset to the named fixture or a fresh disposable case, execute the
 | V-2.6 | 2.6 | Inspection | VP-02 | Inspect a full-canvas screenshot in each theme; confirm symbols and paths have no botanical, filigree or banner imagery. |
 | V-2.7 | 2.7 | Test | VP-02 | Measure canvas width divided by workspace width at the specified viewport; confirm at least 0.80 and that the graph remains usable after reopening panels. |
 | V-2.8 | 2.8 | Test | VP-02 | Select each theme, restart the application and confirm its persisted appearance. |
+| V-2.9 | 2.9 | Test | VP-02 / VP-04 | Select each core type, change each of its four channels and reset all colors; confirm other types remain unchanged until reset, which restores theme defaults. |
+| V-2.10 | 2.10 | Test | VP-02 / VP-04 | Set distinct colors on a fixture containing all six types and both legal edge types; compare SVG attributes in the primary graph, projection and export, including filled support heads, hollow context heads and unchanged semantic serialization. |
 | V-3 | 3 | Demonstration | VP-05 | Open the View menu, launch the model view and close it with the close control and Escape; confirm it is absent from the main workspace before launch and after dismissal. |
 | V-3.1 | 3.1 | Test | VP-05 | Compare node IDs, types and relationship triples in the primary graph, projection graph and model text; open and close the view and confirm unchanged semantic serialization. |
 | V-3.2 | 3.2 | Inspection | VP-05 | Inspect the projection label and export description; confirm there is no unsupported claim of conforming SysML/KerML interchange. |
@@ -50,6 +52,7 @@ For each row: reset to the named fixture or a fresh disposable case, execute the
 | V-4.3 | 4.3 | Test | VP-04 / VP-05 | Save a layout, add a node and delete another, invoke Last Saved and confirm restored extant coordinates, finite new coordinates and no deleted visual node. |
 | V-4.4 | 4.4 | Test | VP-04 / VP-05 | Compare layout storage before and after node drag and semantic Save; confirm only Save Layout changes the stored layout. |
 | V-4.5 | 4.5 | Demonstration | VP-04 / VP-05 | Exercise each listed operation on the FireSat case and confirm that selection exposes the correct element for inspection. |
+| V-4.6 | 4.6 | Test | VP-02 / VP-04 | Change colors, save semantic content and verify no sidecar write; Save Layout, change colors again, invoke Last Saved and reopen to verify restoration; load unknown types, missing channels, CSS payloads and malformed colors and confirm they are discarded. |
 | V-5 | 5 | Demonstration | VP-04 | Disconnect network access, open a local vault, edit an argument, validate it, save it and reopen it. |
 | V-5.1 | 5.1 | Demonstration | VP-04 | Create a vault and root, close it, choose it again and confirm the new root is available. |
 | V-5.2 | 5.2 | Test | VP-04 | Create each type, edit its statement and remove a non-root sample; confirm the resulting persisted model matches the operations. |

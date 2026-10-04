@@ -21,6 +21,7 @@ export function GsnCanvas({ structure, positions, selectedId, revealToken, error
   const viewport = useAppStore(s => s.viewport);
   const setViewport = useAppStore(s => s.setViewport);
   const theme = useAppStore(s => s.theme);
+  const nodeStyles = useAppStore(s => s.nodeStyles);
   const [zoom, setZoom] = useState(projection ? 0.6 : viewport.zoom || 1);
   const sessionKey = JSON.stringify([useAppStore.getState().vaultPath, structure.rootDir, revealToken]);
   const [focus, setFocus] = useState<string | null>(() => !projection && viewport.focusId && structure.elements.has(viewport.focusId) ? viewport.focusId : null);
@@ -45,7 +46,7 @@ export function GsnCanvas({ structure, positions, selectedId, revealToken, error
   const frame = dragFrame ?? paddedBounds;
   // The SVG still has its canonical viewBox. Its offset within a frozen frame cancels
   // origin changes while an outermost node is dragged, so that node follows the pointer.
-  const html = useMemo(() => renderDiagram(rendered, positions, { theme, selectedId, errorIds, projection, interactive: !projection, markerPrefix: projection ? "model" : "gsn" }), [rendered, positions, theme, selectedId, errorIds, projection]);
+  const html = useMemo(() => renderDiagram(rendered, positions, { theme, nodeStyles, selectedId, errorIds, projection, interactive: !projection, markerPrefix: projection ? "model" : "gsn" }), [rendered, positions, theme, nodeStyles, selectedId, errorIds, projection]);
   const publish = (z = zoom, branch = focus) => { if (!projection && scroll.current) setViewport({ x: scroll.current.scrollLeft - SCROLL_GUTTER, y: scroll.current.scrollTop - SCROLL_GUTTER, zoom: z, ...(branch ? { focusId: branch } : {}) }); };
   const centerSelected = (id: string | null = selectedId, z = 1) => {
     const pos = id ? positions[id] : undefined;

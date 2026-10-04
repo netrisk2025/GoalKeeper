@@ -3,6 +3,7 @@
 import type { GoalStructure, LayoutDoc, NodePosition, ViewportState } from "../model/types";
 import { emptyLayout } from "../model/types";
 import { supportTiers } from "../graph/reachability";
+import { parseNodeStyles } from "../presentation/colors";
 import { glyphFor } from "../presentation/geometry";
 
 /** Incremental placement preserves existing centres and respects the rendered glyphs. */
@@ -149,6 +150,14 @@ export function mergeLastSaved(
   return { positions: filled, staleDropped, newlyPlaced };
 }
 
+/** Sidecar presentation data is untrusted; retain only typed, safe fields. */
+function parseDisplay(raw: unknown): NonNullable<LayoutDoc["display"]> {
+  const o = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+  const nodeStyles = parseNodeStyles(o.nodeStyles);
+  return { showEvidenceBadges: typeof o.showEvidenceBadges === "boolean" ? o.showEvidenceBadges : true,
+    ...(Object.keys(nodeStyles).length ? { nodeStyles } : {}) };
+}
+
 export function toLayoutDoc(
   rootId: string,
   working: Record<string, NodePosition>,
@@ -162,7 +171,7 @@ export function toLayoutDoc(
     savedAt: new Date().toISOString(),
     viewport: { ...viewport },
     nodes: { ...working },
-    display: display ?? { showEvidenceBadges: true },
+    display: parseDisplay(display),
   };
 }
 
@@ -192,7 +201,7 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc | null {
       ...(typeof vp.focusId === "string" && vp.focusId.trim() ? { focusId: vp.focusId } : {}),
     },
     nodes,
-    display: (o.display as LayoutDoc["display"]) ?? { showEvidenceBadges: true },
+    display: parseDisplay(o.display),
   };
 }
 

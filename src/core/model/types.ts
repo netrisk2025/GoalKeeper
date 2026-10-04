@@ -8,6 +8,10 @@ export type GsnType =
   | "GsnAssumption"
   | "GsnJustification";
 
+/** Presentation-only color channels, matching the Loss Tool selector. */
+export interface GsnNodeStyle { font: string; box: string; line: string; border: string }
+export type GsnNodeStyles = Partial<Record<GsnType, GsnNodeStyle>>;
+
 export type ElementType = GsnType | "Evidence";
 
 export type EvidenceKind =
@@ -75,6 +79,7 @@ export interface LayoutDoc {
   nodes: Record<string, NodePosition>;
   display?: {
     showEvidenceBadges?: boolean;
+    nodeStyles?: GsnNodeStyles;
   };
 }
 

@@ -48,3 +48,7 @@ Native file operations, operating-system window focus and packaged Linux behavio
 ## Mechanical record checks
 
 A local consistency check passed for all **52** requirement records: unique IDs, nonempty statements/source/rationale/verification fields, valid primary parents, one allowed verification method, bold SHALL statements, one matching SRS heading and one matching verification-procedure row per ID. This confirms documentation coverage, not implementation conformance.
+
+## Color-selector extension — SRS 1.1
+
+The three color candidates were drafted together before assignment to 2.9, 2.10 and 4.6. C1–C9 review confirms explicit observable subjects/actions, finite type/channel scope, testable outcomes and source/rationale. C10–C15 review assigns presentation behavior under 2 and persistence under 4; no orphan or conflicting requirement remains. Requirement 2.5 now explicitly covers shipped defaults because the authorized Loss-style selector permits user-chosen low-contrast colors. The notation geometry and arrow semantics remain governed by 2.1–2.3. Mechanical checks passed for all 55 records: unique IDs, valid parents, required fields, approved methods and matching SRS/procedure entries. Procedures were updated before implementation; this record does not claim executed verification.

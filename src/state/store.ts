@@ -4,10 +4,12 @@ import type {
   GoalStructure,
   GsnElement,
   GsnType,
+  GsnNodeStyles,
   NodePosition,
   RootGoalSummary,
   ViewportState,
 } from "../core/model/types";
+import { parseNodeStyles } from "../core/presentation/colors";
 import { emptyLayout } from "../core/model/types";
 import { canLink } from "../core/rules/relationships";
 import { validateStructure } from "../core/rules/validate";
@@ -54,6 +56,7 @@ interface AppState {
   workingPositions: Record<string, NodePosition>;
   lastSavedPositions: Record<string, NodePosition>;
   viewport: ViewportState;
+  nodeStyles: GsnNodeStyles;
   selectedId: string | null;
   mode: AppMode;
   contentDirty: boolean;
@@ -70,6 +73,7 @@ interface AppState {
 
   bootstrap: () => Promise<void>;
   setTheme: (t: Theme) => void;
+  setNodeStyles: (styles: GsnNodeStyles) => void;
   openVault: () => Promise<void>;
   /** Open a named memory vault or FSA/tauri path already chosen */
   openVaultAt: (path: string, mode?: "tauri" | "memory" | "fsa") => Promise<boolean>;
@@ -125,6 +129,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   workingPositions: {},
   lastSavedPositions: {},
   viewport: { x: 0, y: 0, zoom: 1 },
+  nodeStyles: {},
   selectedId: null,
   mode: "structure",
   contentDirty: false,
@@ -147,6 +152,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.error(e);
       set({ ready: true, notice: `Startup error: ${errMessage(e)}` });
     }
+  },
+
+  setNodeStyles: (styles) => {
+    if (!get().structure) return;
+    const nodeStyles = parseNodeStyles(styles);
+    if (JSON.stringify(nodeStyles) === JSON.stringify(get().nodeStyles)) return;
+    set({ nodeStyles, layoutDirty: true });
   },
 
   setTheme: (t) => {
@@ -189,7 +201,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ roots });
       if (roots.length === 0) {
         set({
-          structure: null, workingPositions: {}, lastSavedPositions: {}, pendingDeletions: [], contentDirty: false, layoutDirty: false, findings: [], selectedId: null,
+          structure: null, workingPositions: {}, lastSavedPositions: {}, nodeStyles: {}, pendingDeletions: [], contentDirty: false, layoutDirty: false, findings: [], selectedId: null,
           notice: "Vault opened. No Root Goals found — create one to begin.",
         });
         vaultOpenBaseline = null;
@@ -207,7 +219,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.error(e);
       set({ backend: previous.backend, vaultPath: previous.vaultPath, roots: previous.roots,
         structure: previous.structure, workingPositions: previous.workingPositions,
-        lastSavedPositions: previous.lastSavedPositions, viewport: previous.viewport,
+        lastSavedPositions: previous.lastSavedPositions, viewport: previous.viewport, nodeStyles: previous.nodeStyles,
         selectedId: previous.selectedId, contentDirty: previous.contentDirty,
         layoutDirty: previous.layoutDirty, pendingDeletions: previous.pendingDeletions,
         findings: previous.findings, notice: `Open vault failed: ${errMessage(e)}` });
@@ -292,6 +304,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         workingPositions: { ...merged.positions },
         lastSavedPositions: { ...diskLayout.nodes },
         viewport: structure.layout.viewport,
+        nodeStyles: parseNodeStyles(structure.layout.display?.nodeStyles),
         selectedId: structure.rootId || structure.elements.keys().next().value || null,
         contentDirty: false,
         layoutDirty: merged.newlyPlaced.length > 0 || merged.staleDropped.length > 0,
@@ -553,16 +566,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveLayout: async () => {
-    const { structure, workingPositions, viewport, vaultPath } = get();
+    const { structure, workingPositions, viewport, nodeStyles, vaultPath } = get();
     if (!structure) return;
     try {
       await ensureVaultReady();
       if (get().vaultPath !== vaultPath) throw new Error("Vault changed during layout save.");
-      const doc = toLayoutDoc(structure.rootId, workingPositions, viewport);
+      const doc = toLayoutDoc(structure.rootId, workingPositions, viewport, { ...structure.layout.display, nodeStyles });
       await writeVaultFile(`${structure.rootDir}/_layout.json`, JSON.stringify(doc, null, 2));
       const current = get();
       if (current.vaultPath !== vaultPath || current.structure?.rootDir !== structure.rootDir) return;
-      const unchanged = current.workingPositions === workingPositions && current.viewport === viewport;
+      const unchanged = current.workingPositions === workingPositions && current.viewport === viewport && current.nodeStyles === nodeStyles;
       set({ lastSavedPositions: { ...workingPositions }, layoutDirty: !unchanged,
         structure: { ...current.structure, layout: doc },
         notice: unchanged ? "Layout saved." : "Saved the earlier layout. Newer layout changes remain unsaved." });
@@ -582,6 +595,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       workingPositions: merged.positions,
       viewport: { ...structure.layout.viewport },
+      nodeStyles: parseNodeStyles(structure.layout.display?.nodeStyles),
       layoutDirty: merged.newlyPlaced.length > 0,
       revealToken: get().revealToken + 1,
       graphEpoch: get().graphEpoch + 1,

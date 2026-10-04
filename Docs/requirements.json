@@ -141,7 +141,7 @@
   },
   {
     "title": "Contrast",
-    "statement": "The presentation **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes.",
+    "statement": "The default presentation palettes **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes.",
     "method": "Analysis",
     "verify": "Calculate relative-luminance contrast from the shipped tokens for both themes and record each ratio; exclude ornamental accents that carry no information.",
     "source": "U; B \u00a76.4.1; project-derived measurable threshold",
@@ -177,6 +177,26 @@
     "source": "L NFR-5; B \u00a76.4.1",
     "rationale": "Preserve the existing standalone theme workflow.",
     "id": "2.8",
+    "parent": "2"
+  },
+  {
+    "title": "Node-type color selection",
+    "statement": "The application **SHALL** provide a node-type color selector with font, fill, connector and boundary channels for each of the six core GSN types and a reset-to-defaults action.",
+    "method": "Test",
+    "verify": "Select each core type, change each of its four channels and reset all colors; confirm other types remain unchanged until reset, which restores theme defaults.",
+    "source": "U: authorized SSTPA integration and reuse of the Loss Tool color selector, 2026-10-04",
+    "rationale": "Match the existing Loss Tool customization workflow while preserving GSN geometry.",
+    "id": "2.9",
+    "parent": "2"
+  },
+  {
+    "title": "Color presentation parity",
+    "statement": "The renderer **SHALL** apply the current node-type colors to the primary diagram, model pop-up and exported SVG, with outgoing connectors using their source type\u2019s connector color.",
+    "method": "Test",
+    "verify": "Set distinct colors on a fixture containing all six types and both legal edge types; compare SVG attributes in the primary graph, projection and export, including filled support heads, hollow context heads and unchanged semantic serialization.",
+    "source": "U: authorized color selector; G Tables 1:2-1/2",
+    "rationale": "Keep alternate views and deliverables consistent without changing notation semantics.",
+    "id": "2.10",
     "parent": "2"
   },
   {
@@ -277,6 +297,16 @@
     "source": "B \u00a76.5.11.15; L FR-29\u201337 adapted",
     "rationale": "Support authoring and review at different scales.",
     "id": "4.5",
+    "parent": "4"
+  },
+  {
+    "title": "Explicit color persistence",
+    "statement": "The layout sidecar **SHALL** persist node-type color overrides through Save Layout and restore them through reopening and Last Saved, accepting only complete four-channel hexadecimal RGB styles for known GSN types.",
+    "method": "Test",
+    "verify": "Change colors, save semantic content and verify no sidecar write; Save Layout, change colors again, invoke Last Saved and reopen to verify restoration; load unknown types, missing channels, CSS payloads and malformed colors and confirm they are discarded.",
+    "source": "U: authorized color selector; SRS 4.2\u20134.4",
+    "rationale": "Keep presentation changes nonsemantic and prevent unsafe imported style values.",
+    "id": "4.6",
     "parent": "4"
   },
   {

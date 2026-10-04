@@ -9,6 +9,7 @@ import { WizardDialog } from "./features/wizard/WizardDialog";
 import { exportJson, exportMarkdown } from "./core/export/report";
 import { displayTypeName } from "./core/model/types";
 import { suggestRootDir, openFireSatVault } from "./lib/fs";
+import { ColorsDialog } from "./features/structure/ColorsDialog";
 import { ModelDialog } from "./features/structure/ModelDialog";
 import { exportSvg } from "./core/presentation/svg";
 import { resolveEvidence } from "./core/vault/load";
@@ -45,6 +46,8 @@ export default function App() {
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
+  const [colorsOpen, setColorsOpen] = useState(false);
+  const [colorsReturnId, setColorsReturnId] = useState("gk-view-trigger");
   const [viewOpen, setViewOpen] = useState(false);
   const autoLayout = useAppStore(s => s.autoLayout);
   const mayLeaveCase = () => {
@@ -134,6 +137,7 @@ export default function App() {
             <button id="gk-view-trigger" className="gk-btn" aria-haspopup="menu" aria-expanded={viewOpen} onClick={() => setViewOpen(!viewOpen)} onKeyDown={e => { if(e.key === "Escape") setViewOpen(false); }}>View</button>
             {viewOpen && <div className="gk-gear-menu" role="menu" onKeyDown={e => { if(e.key === "Escape") { setViewOpen(false); (e.currentTarget.previousElementSibling as HTMLElement)?.focus(); } }}>
               <button className="gk-gear-item" role="menuitem" disabled={!structure} onClick={() => { setViewOpen(false); setModelOpen(true); }}>SysML / KerML equivalent…</button>
+              <button className="gk-gear-item" role="menuitem" disabled={!structure} onClick={() => { setViewOpen(false); setColorsReturnId("gk-view-trigger"); setColorsOpen(true); }}>Node type colors…</button>
               <button className="gk-gear-item" role="menuitem" onClick={() => { setOutlineOpen(!outlineOpen); setViewOpen(false); }}>Toggle argument outline</button>
               <button className="gk-gear-item" role="menuitem" onClick={() => { setInspectorOpen(!inspectorOpen); setViewOpen(false); }}>Toggle inspector</button>
               <button className="gk-gear-item" role="menuitem" onClick={() => { setInspectorOpen(false); setOutlineOpen(false); setMode("structure"); setViewOpen(false); }}>Presentation view</button>
@@ -306,6 +310,7 @@ export default function App() {
                     <button className="gk-btn" onClick={() => setOutlineOpen(!outlineOpen)}>Outline</button>
                     <button className="gk-btn" onClick={() => setInspectorOpen(!inspectorOpen)}>Inspector</button>
                     <button className="gk-btn" onClick={() => void autoLayout()}>Arrange argument</button>
+                    <button id="gk-colors-trigger" className="gk-btn" onClick={() => { setColorsReturnId("gk-colors-trigger"); setColorsOpen(true); }}>Colors</button>
                     <button type="button" className="gk-btn primary" onClick={() => void saveLayout()}>
                       Save Layout
                     </button>
@@ -348,6 +353,7 @@ export default function App() {
         </>
       )}
 
+      <ColorsDialog open={colorsOpen} onClose={() => { setColorsOpen(false); document.getElementById(colorsReturnId)?.focus(); }} />
       <ModelDialog open={modelOpen} onClose={() => { setModelOpen(false); document.getElementById("gk-view-trigger")?.focus(); }} />
       <WizardDialog />
       <OpenVaultDialog beforeOpen={mayLeaveCase} open={openVaultUi} onClose={() => setOpenVaultUi(false)} />
@@ -510,12 +516,13 @@ function ExportMode() {
   const md = exportMarkdown(structure, findings);
   const json = exportJson(structure, findings);
   const positions = useAppStore(s => s.workingPositions);
+  const nodeStyles = useAppStore(s => s.nodeStyles), theme = useAppStore(s => s.theme);
   const [tab, setTab] = useState<"md" | "json">("md");
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       <div className="gk-canvas-toolbar">
         <button className="gk-btn" onClick={() => {
-          const url = URL.createObjectURL(new Blob([exportSvg(structure, positions)], { type: "image/svg+xml" }));
+          const url = URL.createObjectURL(new Blob([exportSvg(structure, positions, { theme, nodeStyles })], { type: "image/svg+xml" }));
           const a = document.createElement("a"); a.href = url; a.download = `${structure.rootDir}-gsn.svg`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
         }}>Download GSN figure (SVG)</button>
         <button type="button" className={`gk-btn ${tab === "md" ? "active" : ""}`} onClick={() => setTab("md")}>

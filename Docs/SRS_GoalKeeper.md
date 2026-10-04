@@ -1,6 +1,6 @@
 # GoalKeeper standalone software requirements specification
 
-Version 1.0 | Baseline date: 2026-10-04 | Status: implementation baseline authorized by the current user request
+Version 1.1 | Baseline date: 2026-10-04 | Status: implementation baseline authorized by the current user request
 
 ## 1. Purpose and authority
 
@@ -38,7 +38,7 @@ The profile excludes Part 1 §3 argument patterns/templates and abstraction mark
 | SupportedBy | Line and filled arrowhead toward supporting target |
 | InContextOf | Line and hollow arrowhead toward contextual target |
 
-These symbols remain authoritative in the main canvas and exported GSN figures. The alternate model graph and text appear only in the menu-launched pop-up. Node geometry and arrow semantics do not change with the theme. Text and symbol dimensions may grow to accommodate content; the standard does not prescribe application fonts or pixel sizes. IDs and statements have priority over auxiliary metadata. The 14 px/contrast/80% width thresholds are project acceptance criteria derived from the user's legibility objective, not quotations from the GSN standard.
+These symbols remain authoritative in the main canvas and exported GSN figures. The alternate model graph and text appear only in the menu-launched pop-up. Node geometry and arrow semantics do not change with the theme or user-selected colors. Color customization follows the Loss Tool four-channel selector; user-selected colors may reduce contrast, and the default-palette acceptance thresholds do not constrain those choices. Text and symbol dimensions may grow to accommodate content; the standard does not prescribe application fonts or pixel sizes. IDs and statements have priority over auxiliary metadata. The 14 px/contrast/80% width thresholds are project acceptance criteria derived from the user's legibility objective, not quotations from the GSN standard.
 
 ## 4. Requirements
 
@@ -216,7 +216,7 @@ These symbols remain authoritative in the main canvas and exported GSN figures. 
 |---|---|
 | ID | 2.5 |
 | Parent ID | 2 |
-| Statement | The presentation **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes. |
+| Statement | The default presentation palettes **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes. |
 | Verification Method | Analysis |
 | Verification Statement | Calculate relative-luminance contrast from the shipped tokens for both themes and record each ratio; exclude ornamental accents that carry no information. |
 | Source | U; B §6.4.1; project-derived measurable threshold |
@@ -257,6 +257,30 @@ These symbols remain authoritative in the main canvas and exported GSN figures. 
 | Verification Statement | Select each theme, restart the application and confirm its persisted appearance. |
 | Source | L NFR-5; B §6.4.1 |
 | Rationale | Preserve the existing standalone theme workflow. |
+
+### 2.9 — Node-type color selection
+
+| Field | Value |
+|---|---|
+| ID | 2.9 |
+| Parent ID | 2 |
+| Statement | The application **SHALL** provide a node-type color selector with font, fill, connector and boundary channels for each of the six core GSN types and a reset-to-defaults action. |
+| Verification Method | Test |
+| Verification Statement | Select each core type, change each of its four channels and reset all colors; confirm other types remain unchanged until reset, which restores theme defaults. |
+| Source | U: authorized SSTPA integration and reuse of the Loss Tool color selector, 2026-10-04 |
+| Rationale | Match the existing Loss Tool customization workflow while preserving GSN geometry. |
+
+### 2.10 — Color presentation parity
+
+| Field | Value |
+|---|---|
+| ID | 2.10 |
+| Parent ID | 2 |
+| Statement | The renderer **SHALL** apply the current node-type colors to the primary diagram, model pop-up and exported SVG, with outgoing connectors using their source type’s connector color. |
+| Verification Method | Test |
+| Verification Statement | Set distinct colors on a fixture containing all six types and both legal edge types; compare SVG attributes in the primary graph, projection and export, including filled support heads, hollow context heads and unchanged semantic serialization. |
+| Source | U: authorized color selector; G Tables 1:2-1/2 |
+| Rationale | Keep alternate views and deliverables consistent without changing notation semantics. |
 
 ### 3 — Alternate model view
 
@@ -377,6 +401,18 @@ These symbols remain authoritative in the main canvas and exported GSN figures. 
 | Verification Statement | Exercise each listed operation on the FireSat case and confirm that selection exposes the correct element for inspection. |
 | Source | B §6.5.11.15; L FR-29–37 adapted |
 | Rationale | Support authoring and review at different scales. |
+
+### 4.6 — Explicit color persistence
+
+| Field | Value |
+|---|---|
+| ID | 4.6 |
+| Parent ID | 4 |
+| Statement | The layout sidecar **SHALL** persist node-type color overrides through Save Layout and restore them through reopening and Last Saved, accepting only complete four-channel hexadecimal RGB styles for known GSN types. |
+| Verification Method | Test |
+| Verification Statement | Change colors, save semantic content and verify no sidecar write; Save Layout, change colors again, invoke Last Saved and reopen to verify restoration; load unknown types, missing channels, CSS payloads and malformed colors and confirm they are discarded. |
+| Source | U: authorized color selector; SRS 4.2–4.4 |
+| Rationale | Keep presentation changes nonsemantic and prevent unsafe imported style values. |
 
 ### 5 — Standalone authoring and persistence
 

@@ -264,3 +264,57 @@ describe("SRS 5.2, 5.6, 6.1: persisted editing, deletion and save races", () => 
   });
 
 });
+
+
+describe("SRS 4.6: explicit working palette persistence", () => {
+  const green = { font: "#102030", box: "#d0e0d0", line: "#345678", border: "#123456" };
+  it("keeps colors nonsemantic, saves only with layout and restores through Last Saved and reopen", async () => {
+    install();
+    const store = useAppStore.getState(), before = snapshot();
+    store.setNodeStyles({ GsnGoal: green });
+    expect(useAppStore.getState().layoutDirty).toBe(true);
+    expect(useAppStore.getState().contentDirty).toBe(false);
+    expect(snapshot()).toBe(before);
+    expect(useAppStore.getState().structure!.layout.display?.nodeStyles).toBeUndefined();
+    await store.saveContent();
+    expect(disk.has("case/_layout.json")).toBe(false);
+    await store.saveLayout();
+    expect(JSON.parse(disk.get("case/_layout.json")!).display.nodeStyles).toEqual({ GsnGoal: green });
+    expect(useAppStore.getState().layoutDirty).toBe(false);
+    store.setNodeStyles({});
+    expect(useAppStore.getState().nodeStyles).toEqual({});
+    store.restoreLastSaved();
+    expect(useAppStore.getState().nodeStyles).toEqual({ GsnGoal: green });
+    store.setNodeStyles({ GsnSolution: green });
+    await store.openRoot("case");
+    expect(useAppStore.getState().nodeStyles).toEqual({ GsnGoal: green });
+    const { modified: _savedTimestamp, ...reopened } = useAppStore.getState().structure!.elements.get("G1")!;
+    expect(reopened).toEqual(JSON.parse(before)[0]);
+  });
+  it("does not mark newer color edits saved when an earlier write completes", async () => {
+    install();
+    const store = useAppStore.getState();
+    store.setNodeStyles({ GsnGoal: green });
+    const writeGate = deferred<void>();
+    mocks.write.mockImplementation(async () => writeGate.promise);
+    const saving = store.saveLayout();
+    await Promise.resolve();
+    store.setNodeStyles({ GsnGoal: { ...green, box: "#ffffff" } });
+    writeGate.resolve(); await saving;
+    expect(useAppStore.getState().layoutDirty).toBe(true);
+    expect(useAppStore.getState().nodeStyles.GsnGoal?.box).toBe("#ffffff");
+    expect(useAppStore.getState().structure!.layout.display?.nodeStyles?.GsnGoal?.box).toBe(green.box);
+    store.restoreLastSaved();
+    expect(useAppStore.getState().nodeStyles).toEqual({ GsnGoal: green });
+  });
+  it("saves Reset as removal of overrides and cannot leak a previous case palette", async () => {
+    install(); const store = useAppStore.getState();
+    store.setNodeStyles({ GsnGoal: green }); await store.saveLayout();
+    store.setNodeStyles({}); await store.saveLayout();
+    expect(JSON.parse(disk.get("case/_layout.json")!).display.nodeStyles).toBeUndefined();
+    store.setNodeStyles({ GsnGoal: green });
+    mocks.list.mockResolvedValue([]);
+    await store.openVaultAt("memory://empty", "memory");
+    expect(useAppStore.getState().nodeStyles).toEqual({});
+  });
+});

@@ -93,3 +93,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .gk-evidence-source summary { cursor: pointer; font-weight: 600; }
 .gk-evidence-source p { max-width: 90ch; overflow-wrap: anywhere; }
 .gk-evidence-source pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Four-channel node-type color selector shared conceptually with the Loss Tool. */
+.gk-colors-dialog { width: min(560px, 92vw); max-height: 90vh; overflow: auto; padding: 24px; color: var(--gk-text); background: var(--gk-surface); border: 1px solid var(--gk-gold); border-radius: 10px; box-shadow: var(--gk-shadow); }
+.gk-colors-dialog::backdrop { background: #07181bb3; backdrop-filter: blur(3px); }
+.gk-colors-dialog h2 { margin-top: 0; }
+.gk-colors-dialog p { line-height: 1.5; }
+.gk-color-type { display: grid; gap: 8px; margin: 20px 0; }
+.gk-color-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.gk-color-grid label { display: grid; grid-template-columns: 1fr 56px; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--gk-line); border-radius: 6px; }
+.gk-color-grid input[type="color"] { width: 56px; height: 36px; cursor: pointer; padding: 2px; }
+.gk-color-grid code { grid-column: 1 / -1; font-size: 14px; }
+.gk-color-contrast, .gk-color-hint { font-size: 13px; color: var(--gk-muted); }
+@media (max-width: 420px) { .gk-color-grid { grid-template-columns: 1fr; } }
