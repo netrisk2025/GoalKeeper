@@ -1,0 +1,64 @@
+
+> goalkeeper@0.2.0 verify
+> npm test && npm run typecheck && npm run build
+
+
+> goalkeeper@0.2.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /home/netrisk/Projects/GoalKeeper
+
+
+ Test Files  15 passed (15)
+      Tests  161 passed (161)
+   Start at  17:17:04
+   Duration  522ms (environment 32%, tests 29%, transform 25%, import 12%, worker 1%)
+
+
+> goalkeeper@0.2.0 typecheck
+> tsc --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false
+
+
+> goalkeeper@0.2.0 build
+> npm run licenses && tsc --noEmit && vite build && node scripts/verify-licenses.mjs --dist
+
+
+> goalkeeper@0.2.0 licenses
+> node scripts/verify-licenses.mjs
+
+{
+  "passed": true,
+  "offline": true,
+  "elkjsVersion": "0.12.0",
+  "npmPackages": 13,
+  "sourceArchives": 10,
+  "embeddedNotices": 11,
+  "unchangedElkLibraryFiles": 9,
+  "distributionFilesVerified": 0,
+  "scope": "GoalKeeper JavaScript production dependencies and ELK embedded components; native Rust dependency licensing is separate."
+}
+vite v6.4.3 building for production...
+transforming...
+✓ 87 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.41 kB │ gzip:  0.28 kB
+dist/assets/elk-worker.min-r_yRvuMO.js  1,595.33 kB
+dist/assets/index-sUnC4WQO.css             15.13 kB │ gzip:  4.06 kB
+dist/assets/index-CS3Qnt9j.js               1.51 kB │ gzip:  0.52 kB
+dist/assets/core-DhEqZVGG.js                2.44 kB │ gzip:  0.98 kB
+dist/assets/index-anrf6uSr.js               2.52 kB │ gzip:  0.85 kB
+dist/assets/index-LArbC7iW.js             282.13 kB │ gzip: 84.75 kB
+✓ built in 493ms
+{
+  "passed": true,
+  "offline": true,
+  "elkjsVersion": "0.12.0",
+  "npmPackages": 13,
+  "sourceArchives": 10,
+  "embeddedNotices": 11,
+  "unchangedElkLibraryFiles": 9,
+  "distributionFilesVerified": 39,
+  "scope": "GoalKeeper JavaScript production dependencies and ELK embedded components; native Rust dependency licensing is separate."
+}

@@ -4,6 +4,7 @@ import { GSN_TYPES, displayTypeName } from "../../core/model/types";
 import { canLink } from "../../core/rules/relationships";
 import { pathToRoot } from "../../core/graph/reachability";
 import { useAppStore } from "../../state/store";
+import { resolveEvidence } from "../../core/vault/load";
 
 export function DetailPanel() {
   const structure = useAppStore((s) => s.structure);
@@ -11,6 +12,7 @@ export function DetailPanel() {
   const updateElement = useAppStore((s) => s.updateElement);
   const addNode = useAppStore((s) => s.addNode);
   const linkExisting = useAppStore((s) => s.linkExisting);
+  const deleteNode = useAppStore((s) => s.deleteNode);
   const removeLink = useAppStore((s) => s.removeLink);
   const selectNode = useAppStore((s) => s.selectNode);
 
@@ -25,7 +27,7 @@ export function DetailPanel() {
     if (!node) return;
     setName(node.name);
     setStatement(node.statement);
-  }, [node]);
+  }, [node?.gsnId, node?.name, node?.statement, structure?.rootDir]);
 
   if (!structure) {
     return (
@@ -79,28 +81,30 @@ export function DetailPanel() {
           </div>
         )}
 
-        <label className="gk-label">Title</label>
+        <label className="gk-label" htmlFor="node-title">Title</label>
         <input
           className="gk-input"
+          id="node-title"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Short title on the canvas"
         />
-        <label className="gk-label">Statement</label>
+        <label className="gk-label" htmlFor="node-statement">Statement</label>
         <textarea
           className="gk-textarea"
+          id="node-statement"
           value={statement}
           onChange={(e) => setStatement(e.target.value)}
           rows={5}
         />
-        <label className="gk-label" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        {canSupport && <label className="gk-label" style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
             type="checkbox"
             checked={node.undeveloped}
             onChange={(e) => updateElement(node.gsnId, { undeveloped: e.target.checked })}
           />
           Undeveloped
-        </label>
+        </label>}
         <button
           className="gk-btn primary"
           style={{ marginTop: 10, width: "100%" }}
@@ -109,6 +113,7 @@ export function DetailPanel() {
           Apply node edits
         </button>
 
+        {node.gkType === "GsnSolution" && <div className="gk-evidence-editor"><h4>Evidence references</h4><p className="gk-help">Select the source notes supporting this claim.</p>{[...structure.evidence.values()].map(e => <label className="gk-evidence-choice" key={e.filePath}><input type="checkbox" checked={node.hasEvidence.some(ref => resolveEvidence(structure, ref)?.filePath === e.filePath)} onChange={event => { const path = e.filePath.replace(/\.md$/i, ""); updateElement(node.gsnId, { hasEvidence: event.target.checked ? [...new Set([...node.hasEvidence, path])] : node.hasEvidence.filter(ref => resolveEvidence(structure, ref)?.filePath !== e.filePath) }); }}/><span>{e.name}<small>{e.kind} · {e.statement}</small></span></label>)}{structure.evidence.size === 0 && <p className="gk-help">Add an Evidence note to the vault and reopen the case to associate it here.</p>}</div>}
         {canSupport && (
           <>
             <h4 style={{ margin: "16px 0 6px", fontSize: "0.85rem" }}>Add GSN node</h4>
@@ -170,6 +175,7 @@ export function DetailPanel() {
 
         <h4 style={{ margin: "16px 0 6px", fontSize: "0.85rem" }}>Outgoing</h4>
         <OutgoingList node={node} onRemove={removeLink} onSelect={selectNode} />
+        {!node.isRoot && <button className="gk-btn danger" style={{ marginTop: 20 }} onClick={() => { if (window.confirm(`Delete ${node.gsnId} and its incident links? This is written to the vault on Save content.`)) deleteNode(node.gsnId); }}>Delete element</button>}
       </div>
     </aside>
   );

@@ -2,6 +2,7 @@
 
 import type {
   EvidenceNote,
+  Finding,
   GoalStructure,
   GsnElement,
   GsnType,
@@ -14,6 +15,7 @@ import {
   parseElementFile,
   serializeElement,
   slugify,
+  wikilinkKey,
 } from "../markdown/parse";
 import { mergeLastSaved, parseLayoutDoc } from "../layout/manager";
 
@@ -67,6 +69,7 @@ export function loadGoalStructure(
   const elements = new Map<string, GsnElement>();
   const evidence = new Map<string, EvidenceNote>();
   let rootId = "";
+  const loadFindings: Finding[] = [];
 
   for (const f of files) {
     if (!f.path.endsWith(".md")) continue;
@@ -75,24 +78,21 @@ export function loadGoalStructure(
     try {
       const parsed = parseElementFile(f.path, f.text);
       if ("gkType" in parsed) {
+        if (!f.path.startsWith(rootDir + "/")) continue;
+        if (elements.has(parsed.gsnId)) {
+          loadFindings.push({ severity: "ERROR", code: "DUP_ID", nodeId: parsed.gsnId,
+            message: `Duplicate GSN ID ${parsed.gsnId} in ${elements.get(parsed.gsnId)!.filePath} and ${f.path}. The first file is shown; repair the duplicate in the vault.` });
+          continue;
+        }
         elements.set(parsed.gsnId, parsed);
-        if (parsed.isRoot) rootId = parsed.gsnId;
+        if (parsed.isRoot && !rootId) rootId = parsed.gsnId;
       } else {
-        evidence.set(parsed.name, parsed);
-        const base = f.path.split("/").pop()?.replace(/\.md$/i, "") ?? parsed.name;
-        evidence.set(base, parsed);
+        evidence.set(parsed.filePath, parsed);
       }
-    } catch {
-      // skip
-    }
-  }
-
-  if (!rootId) {
-    for (const el of elements.values()) {
-      if (el.gkType === "GsnGoal" && el.filePath.startsWith(rootDir + "/")) {
-        rootId = el.gsnId;
-        el.isRoot = true;
-        break;
+    } catch (error) {
+      if (/^gk[_Tt]ype:|^gk_type:/m.test(f.text)) {
+        loadFindings.push({ severity: "ERROR", code: "IMPORT_TYPE", nodeId: f.path,
+          message: `${f.path}: ${error instanceof Error ? error.message : String(error)}` });
       }
     }
   }
@@ -114,6 +114,7 @@ export function loadGoalStructure(
     elements,
     evidence,
     layout,
+    loadFindings,
   };
 
   const merged = mergeLastSaved(structure, layout);
@@ -193,4 +194,16 @@ export function createChildElement(
     created: now,
     modified: now,
   };
+}
+
+/** Resolve canonical vault paths first. Ambiguous short names never bind arbitrarily. */
+export function resolveEvidence(structure: Pick<GoalStructure, "evidence" | "rootDir">, reference: string): EvidenceNote | undefined {
+  const key = reference.replace(/^\[\[|\]\]$/g, "").split("|")[0].replace(/\\/g, "/").replace(/^\.\//, "").replace(/\.md$/i, "");
+  const notes = [...new Map([...structure.evidence.values()].map((note) => [note.filePath, note])).values()];
+  const paths = new Set([key, `${structure.rootDir}/${key}`]);
+  const exact = notes.filter((note) => paths.has(note.filePath.replace(/\.md$/i, "")));
+  if (exact.length === 1) return exact[0];
+  if (exact.length > 1 || key.includes("/")) return undefined;
+  const matches = notes.filter((note) => note.name === key || wikilinkKey(note.filePath) === key);
+  return matches.length === 1 ? matches[0] : undefined;
 }

@@ -11,3 +11,4 @@ src-tauri/target/
 .idea
 .vite
 coverage/
+src-tauri/gen/

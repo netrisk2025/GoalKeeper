@@ -1,209 +1,57 @@
-/** Structural validation (SRS FR-38–FR-41). */
-
-import type { Finding, GoalStructure, GsnElement } from "../model/types";
+/** GSN v3 core structural checks. Passing these checks is not evidence acceptance. */
+import type { Finding, GoalStructure } from "../model/types";
 import { canLink } from "./relationships";
-import { findSupportCycle } from "../graph/cycle";
+import { findArgumentCycle } from "../graph/cycle";
 import { reachableFromRoot } from "../graph/reachability";
+import { resolveEvidence } from "../vault/load";
 
 export function validateStructure(structure: GoalStructure): Finding[] {
-  const findings: Finding[] = [];
+  const findings: Finding[] = [...(structure.loadFindings ?? [])];
   const { rootId, elements } = structure;
+  const add = (severity: Finding["severity"], code: string, nodeId: string | undefined, message: string) => findings.push({ severity, code, nodeId, message });
+  const root = elements.get(rootId);
+  if (!root) add("ERROR", "NO_ROOT", rootId || undefined, "No Root Goal is marked in this case. Mark exactly one Goal is_root in its Markdown note.");
+  else if (root.gkType !== "GsnGoal" || !root.isRoot) add("ERROR", "ROOT_TYPE", rootId, `${rootId} must be a Goal marked is_root.`);
 
-  if (!rootId || !elements.has(rootId)) {
-    findings.push({
-      severity: "ERROR",
-      code: "NO_ROOT",
-      message: "No Root Goal selected or Root Goal file is missing.",
-      nodeId: rootId || undefined,
-    });
-    return findings;
-  }
-
-  const root = elements.get(rootId)!;
-  if (root.gkType !== "GsnGoal" || !root.isRoot) {
-    findings.push({
-      severity: "ERROR",
-      code: "ROOT_TYPE",
-      nodeId: rootId,
-      message: `${rootId} must be a GsnGoal marked is_root.`,
-    });
-  }
-
-  const edges = collectSupportEdges(elements);
   const reachable = reachableFromRoot(rootId, elements);
-  const incomingSupport = new Set<string>();
-  for (const e of edges) {
-    incomingSupport.add(e.target);
-  }
-
-  // Exactly one root: no other Goal without incoming SupportedBy
+  const ids = new Set<string>();
   for (const el of elements.values()) {
-    if (el.gkType === "GsnGoal" && el.gsnId !== rootId && !incomingSupport.has(el.gsnId)) {
-      if (reachable.has(el.gsnId) || el.isRoot) {
-        findings.push({
-          severity: "ERROR",
-          code: "SECOND_ROOT",
-          nodeId: el.gsnId,
-          message: `${el.gsnId} is a second root Goal (no incoming SUPPORTED_BY). A Goal Structure has exactly one Root Goal.`,
-        });
+    if (!el.gsnId.trim()) add("ERROR", "EMPTY_ID", el.filePath, `${el.filePath} has an empty GSN identifier.`);
+    if (ids.has(el.gsnId)) add("ERROR", "DUP_ID", el.gsnId, `Duplicate GSN identifier ${el.gsnId}.`);
+    ids.add(el.gsnId);
+    if (el.isRoot && el.gsnId !== rootId) add("ERROR", "SECOND_ROOT", el.gsnId, `${el.gsnId} is also marked as root. This standalone case requires exactly one Goal root.`);
+    if (!reachable.has(el.gsnId)) add("ERROR", "ORPHAN", el.gsnId, `${el.gsnId} is not reachable from Root Goal ${rootId || "(missing)"}. Link it to the case or remove it.`);
+    if (el.supportedBy.includes(rootId)) add("ERROR", "ROOT_INCOMING", rootId, `Root Goal ${rootId} has incoming support from ${el.gsnId}. Remove that relationship.`);
+
+    for (const [rel, links] of [["SUPPORTED_BY", el.supportedBy], ["IN_CONTEXT_OF", el.inContextOf]] as const) {
+      const seen = new Set<string>();
+      for (const id of links) {
+        if (seen.has(id)) add("ERROR", "DUP_EDGE", el.gsnId, `Duplicate ${rel} relationship ${el.gsnId} → ${id}.`);
+        seen.add(id);
+        const target = elements.get(id);
+        if (!target) add("ERROR", "MISSING_TARGET", el.gsnId, `${el.gsnId} ${rel} references missing ${id}. Restore the note or remove the link.`);
+        else if (!canLink(el.gkType, target.gkType, rel)) add("ERROR", "ILLEGAL_REL", el.gsnId, `GSN v3 does not permit ${rel} from ${el.gkType} ${el.gsnId} to ${target.gkType} ${id}.`);
       }
     }
-  }
 
-  // Duplicate logical edges
-  const edgeCounts = new Map<string, number>();
-  for (const el of elements.values()) {
-    for (const t of el.supportedBy) {
-      const key = `${el.gsnId}|SUPPORTED_BY|${t}`;
-      edgeCounts.set(key, (edgeCounts.get(key) ?? 0) + 1);
+    const canBeUndeveloped = el.gkType === "GsnGoal" || el.gkType === "GsnStrategy";
+    if (el.undeveloped) {
+      if (!canBeUndeveloped) add("ERROR", "INVALID_UNDEVELOPED", el.gsnId, `${el.gsnId}: only Goals and Strategies may carry the undeveloped diamond.`);
+      else add("INFO", "UNDEVELOPED", el.gsnId, `${el.gsnId} is explicitly undeveloped; further argument and evidence are required.`);
     }
-    for (const t of el.inContextOf) {
-      const key = `${el.gsnId}|IN_CONTEXT_OF|${t}`;
-      edgeCounts.set(key, (edgeCounts.get(key) ?? 0) + 1);
-    }
-  }
-  for (const [key, count] of edgeCounts) {
-    if (count > 1) {
-      const [source, type, target] = key.split("|");
-      findings.push({
-        severity: "ERROR",
-        code: "DUP_EDGE",
-        nodeId: source,
-        message: `Duplicate ${type} relationship ${source} -> ${target} (${count} copies).`,
-      });
-    }
-  }
-
-  // Illegal relationships
-  for (const el of elements.values()) {
-    for (const t of el.supportedBy) {
-      const target = elements.get(t);
-      if (!target) {
-        findings.push({
-          severity: "WARNING",
-          code: "MISSING_TARGET",
-          nodeId: el.gsnId,
-          message: `${el.gsnId} SUPPORTED_BY references missing ${t}.`,
-        });
-        continue;
-      }
-      if (!canLink(el.gkType, target.gkType, "SUPPORTED_BY")) {
-        findings.push({
-          severity: "ERROR",
-          code: "ILLEGAL_REL",
-          nodeId: el.gsnId,
-          message: `Illegal SUPPORTED_BY from ${el.gkType} ${el.gsnId} to ${target.gkType} ${t}.`,
-        });
-      }
-    }
-    for (const t of el.inContextOf) {
-      const target = elements.get(t);
-      if (!target) {
-        findings.push({
-          severity: "WARNING",
-          code: "MISSING_TARGET",
-          nodeId: el.gsnId,
-          message: `${el.gsnId} IN_CONTEXT_OF references missing ${t}.`,
-        });
-        continue;
-      }
-      if (!canLink(el.gkType, target.gkType, "IN_CONTEXT_OF")) {
-        findings.push({
-          severity: "ERROR",
-          code: "ILLEGAL_REL",
-          nodeId: el.gsnId,
-          message: `Illegal IN_CONTEXT_OF from ${el.gkType} ${el.gsnId} to ${target.gkType} ${t}.`,
-        });
-      }
-    }
-  }
-
-  // Cycle
-  const cycleAt = findSupportCycle(elements);
-  if (cycleAt) {
-    findings.push({
-      severity: "ERROR",
-      code: "CYCLE",
-      nodeId: cycleAt,
-      message: `Cycle detected in SUPPORTED_BY relationships involving ${cycleAt}. The Goal Structure must be a DAG.`,
-    });
-  }
-
-  // GSN ID uniqueness (map keys already unique; check empty ids)
-  for (const el of elements.values()) {
-    if (!el.gsnId.trim()) {
-      findings.push({
-        severity: "ERROR",
-        code: "EMPTY_ID",
-        nodeId: el.filePath,
-        message: `Element ${el.filePath} has empty GSN ID.`,
-      });
-    }
-  }
-
-  // Completeness warnings
-  for (const el of elements.values()) {
-    if (!reachable.has(el.gsnId) && el.gsnId !== rootId) {
-      findings.push({
-        severity: "INFO",
-        code: "ORPHAN",
-        nodeId: el.gsnId,
-        message: `${el.gsnId} is not reachable from Root Goal ${rootId}.`,
-      });
-    }
-    if ((el.gkType === "GsnGoal" || el.gkType === "GsnStrategy") && el.supportedBy.length === 0) {
-      findings.push({
-        severity: "WARNING",
-        code: "NO_SUPPORT",
-        nodeId: el.gsnId,
-        message: `${el.gsnId} has no supporting node.`,
-      });
-    }
+    if (canBeUndeveloped && !el.supportedBy.length) add("WARNING", "NO_SUPPORT", el.gsnId, `${el.gsnId} has no supporting ${el.gkType === "GsnStrategy" ? "Goal" : "node"}${el.undeveloped ? " and is marked undeveloped" : ""}.`);
     if (el.gkType === "GsnSolution") {
-      if (el.supportedBy.length > 0) {
-        findings.push({
-          severity: "ERROR",
-          code: "SOLUTION_OUTGOING",
-          nodeId: el.gsnId,
-          message: `${el.gsnId} is a Solution with outgoing SUPPORTED_BY.`,
-        });
+      if (el.supportedBy.length) add("ERROR", "SOLUTION_OUTGOING", el.gsnId, `${el.gsnId} is a terminal Solution and cannot have outgoing SUPPORTED_BY relationships.`);
+      if (!el.hasEvidence.length) add("WARNING", "NO_EVIDENCE", el.gsnId, `${el.gsnId} has no evidence-note reference and is incomplete.`);
+      for (const reference of el.hasEvidence) {
+        if (!resolveEvidence(structure, reference)) add("WARNING", "MISSING_EVIDENCE", el.gsnId, `${el.gsnId} references missing or ambiguous evidence “${reference}”. Attach a resolvable evidence note; the Solution is incomplete.`);
       }
-      if (el.hasEvidence.length === 0) {
-        findings.push({
-          severity: "WARNING",
-          code: "NO_EVIDENCE",
-          nodeId: el.gsnId,
-          message: `${el.gsnId} is a Solution without evidence — structure cannot be marked complete.`,
-        });
-      }
+    } else if (el.hasEvidence.length) {
+      add("ERROR", "ILLEGAL_EVIDENCE", el.gsnId, `${el.gsnId}: evidence-note references belong on a Solution.`);
     }
-    if (!el.statement.trim()) {
-      findings.push({
-        severity: "WARNING",
-        code: "EMPTY_STATEMENT",
-        nodeId: el.gsnId,
-        message: `${el.gsnId} has an empty statement.`,
-      });
-    }
-    if (el.undeveloped && (el.gkType === "GsnGoal" || el.gkType === "GsnStrategy")) {
-      findings.push({
-        severity: "INFO",
-        code: "UNDEVELOPED",
-        nodeId: el.gsnId,
-        message: `${el.gsnId} is marked undeveloped.`,
-      });
-    }
+    if (!el.statement.trim()) add("WARNING", "EMPTY_STATEMENT", el.gsnId, `${el.gsnId} has an empty statement.`);
   }
-
+  const cycleAt = findArgumentCycle(elements);
+  if (cycleAt) add("ERROR", "CYCLE", cycleAt, `Cycle detected in GSN relationships involving ${cycleAt}. GSN arguments must be acyclic.`);
   return findings;
-}
-
-function collectSupportEdges(elements: Map<string, GsnElement>): { source: string; target: string }[] {
-  const out: { source: string; target: string }[] = [];
-  for (const el of elements.values()) {
-    for (const t of el.supportedBy) {
-      out.push({ source: el.gsnId, target: t });
-    }
-  }
-  return out;
 }

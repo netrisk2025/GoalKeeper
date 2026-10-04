@@ -1,0 +1,310 @@
+{
+  "generatedFrom": "Implemented renderDiagram and layoutArgument through Vite SSR",
+  "qualification": "Storyboard excerpts are selected views, not complete subcases or new stored semantic models.",
+  "case": {
+    "rootDir": "FireSat-Authentic-Reports",
+    "nodes": 18,
+    "evidenceNotes": 2,
+    "undeveloped": [
+      "G3",
+      "G4",
+      "G5",
+      "G6",
+      "G9"
+    ],
+    "findings": [
+      {
+        "severity": "INFO",
+        "code": "UNDEVELOPED",
+        "nodeId": "G3",
+        "message": "G3 is explicitly undeveloped; further argument and evidence are required."
+      },
+      {
+        "severity": "WARNING",
+        "code": "NO_SUPPORT",
+        "nodeId": "G3",
+        "message": "G3 has no supporting node and is marked undeveloped."
+      },
+      {
+        "severity": "INFO",
+        "code": "UNDEVELOPED",
+        "nodeId": "G4",
+        "message": "G4 is explicitly undeveloped; further argument and evidence are required."
+      },
+      {
+        "severity": "WARNING",
+        "code": "NO_SUPPORT",
+        "nodeId": "G4",
+        "message": "G4 has no supporting node and is marked undeveloped."
+      },
+      {
+        "severity": "INFO",
+        "code": "UNDEVELOPED",
+        "nodeId": "G5",
+        "message": "G5 is explicitly undeveloped; further argument and evidence are required."
+      },
+      {
+        "severity": "WARNING",
+        "code": "NO_SUPPORT",
+        "nodeId": "G5",
+        "message": "G5 has no supporting node and is marked undeveloped."
+      },
+      {
+        "severity": "INFO",
+        "code": "UNDEVELOPED",
+        "nodeId": "G6",
+        "message": "G6 is explicitly undeveloped; further argument and evidence are required."
+      },
+      {
+        "severity": "WARNING",
+        "code": "NO_SUPPORT",
+        "nodeId": "G6",
+        "message": "G6 has no supporting node and is marked undeveloped."
+      },
+      {
+        "severity": "INFO",
+        "code": "UNDEVELOPED",
+        "nodeId": "G9",
+        "message": "G9 is explicitly undeveloped; further argument and evidence are required."
+      },
+      {
+        "severity": "WARNING",
+        "code": "NO_SUPPORT",
+        "nodeId": "G9",
+        "message": "G9 has no supporting node and is marked undeveloped."
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "01-claim",
+      "title": "State the claim",
+      "ids": [
+        "G1",
+        "C2"
+      ],
+      "note": "Selected view of G1 and source Loss context C2. S1 and C1 are omitted from this plate; the top claim remains unproven.",
+      "positions": {
+        "G1": {
+          "x": 204,
+          "y": 149
+        },
+        "C2": {
+          "x": 646,
+          "y": 149
+        }
+      },
+      "omittedIds": [
+        "A1",
+        "C1",
+        "C3",
+        "C4",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "J1",
+        "S1",
+        "Sn1",
+        "Sn2"
+      ]
+    },
+    {
+      "id": "02-scope",
+      "title": "Bound the claim",
+      "ids": [
+        "G1",
+        "C1"
+      ],
+      "note": "Selected view of the declared operating scope. Source Loss context C2 and all support branches are omitted; omission does not indicate closure.",
+      "positions": {
+        "G1": {
+          "x": 204,
+          "y": 149
+        },
+        "C1": {
+          "x": 646,
+          "y": 149
+        }
+      },
+      "omittedIds": [
+        "A1",
+        "C2",
+        "C3",
+        "C4",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "J1",
+        "S1",
+        "Sn1",
+        "Sn2"
+      ]
+    },
+    {
+      "id": "03-strategy",
+      "title": "Explain the inference",
+      "ids": [
+        "S1",
+        "J1"
+      ],
+      "note": "Selected view of strategy S1 and its rationale J1. G1 and the six supporting Goals remain in the full case and are omitted here.",
+      "positions": {
+        "S1": {
+          "x": 222,
+          "y": 188.25
+        },
+        "J1": {
+          "x": 705,
+          "y": 188.25
+        }
+      },
+      "omittedIds": [
+        "A1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "Sn1",
+        "Sn2"
+      ]
+    },
+    {
+      "id": "04-elaboration",
+      "title": "Expose unfinished branches",
+      "ids": [
+        "G3",
+        "G4",
+        "C4"
+      ],
+      "note": "Selected view of processor and sensor claims. Their undeveloped diamonds remain visible. The classification, downlink and residual-decision branches are omitted here and remain part of the unfinished case.",
+      "positions": {
+        "G3": {
+          "x": 204,
+          "y": 145.5
+        },
+        "G4": {
+          "x": 204,
+          "y": 364
+        },
+        "C4": {
+          "x": 646,
+          "y": 364
+        }
+      },
+      "omittedIds": [
+        "A1",
+        "C1",
+        "C2",
+        "C3",
+        "G1",
+        "G2",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "J1",
+        "S1",
+        "Sn1",
+        "Sn2"
+      ]
+    },
+    {
+      "id": "05-evidence",
+      "title": "Attach bounded evidence",
+      "ids": [
+        "G2",
+        "Sn1"
+      ],
+      "note": "Selected view of the traceability claim and source record. FS-E1 supports this narrow record claim; no operational control effectiveness is asserted.",
+      "positions": {
+        "G2": {
+          "x": 214.5,
+          "y": 143
+        },
+        "Sn1": {
+          "x": 214.5,
+          "y": 519.5
+        }
+      },
+      "omittedIds": [
+        "A1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "G1",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "J1",
+        "S1",
+        "Sn2"
+      ]
+    },
+    {
+      "id": "06-review",
+      "title": "Keep acceptance open",
+      "ids": [
+        "G7",
+        "G9",
+        "A1"
+      ],
+      "note": "Selected view of the residual-decision branch. G8/Sn2 and context C3 are omitted. G9 is explicitly undeveloped; the assumption still needs configuration evidence.",
+      "positions": {
+        "G7": {
+          "x": 204,
+          "y": 169.27499999999998
+        },
+        "A1": {
+          "x": 669,
+          "y": 169.27499999999998
+        },
+        "G9": {
+          "x": 458,
+          "y": 503.04999999999995
+        }
+      },
+      "omittedIds": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G8",
+        "J1",
+        "S1",
+        "Sn1",
+        "Sn2"
+      ]
+    }
+  ]
+}

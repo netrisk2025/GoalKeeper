@@ -1,0 +1,8 @@
+# Rendered documents and assets are binary review artifacts.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jar binary
+*.tar.gz binary
+# Preserve the upstream notices byte for byte, including their whitespace.
+public/licenses/elk-embedded/* -whitespace

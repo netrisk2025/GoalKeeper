@@ -1,412 +1,160 @@
-import { useEffect, useRef } from "react";
-import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
-import type { GoalStructure, NodePosition } from "../../core/model/types";
-import { displayTypeName } from "../../core/model/types";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { GoalStructure, NodePosition, ViewportState } from "../../core/model/types";
+import { boundsFor } from "../../core/presentation/geometry";
+import { renderDiagram } from "../../core/presentation/svg";
+import { useAppStore } from "../../state/store";
+
+type CanvasBounds = ReturnType<typeof boundsFor>;
+// Scroll gutters keep the camera movable in both directions even for a tiny branch.
+// Persisted viewport x/y stay relative to the argument, independent of this UI gutter.
+const SCROLL_GUTTER = 4096;
+// One primary argument is active at a time. Keep its viewing context across mode unmounts.
+let primarySession: { key: string } | null = null;
 
 interface Props {
-  structure: GoalStructure;
-  positions: Record<string, NodePosition>;
-  selectedId: string | null;
-  revealToken: number;
-  graphEpoch: number;
-  errorIds: Set<string>;
-  onSelect: (id: string | null) => void;
-  onDrag: (id: string, x: number, y: number) => void;
+  structure: GoalStructure; positions: Record<string, NodePosition>; selectedId: string | null;
+  revealToken: number; graphEpoch: number; errorIds: Set<string>;
+  onSelect: (id: string | null) => void; onDrag: (id: string, x: number, y: number) => void;
+  projection?: boolean;
 }
-
-/** Nominal node size (screen px at zoom 1). Max/min zoom ratio ≤ 5×. */
-export const NODE_W = 168;
-export const NODE_H = 72;
-/** Readable minimum zoom; maximum is 5× this. */
-export const MIN_ZOOM = 0.4;
-export const MAX_ZOOM = MIN_ZOOM * 5; // 2.0
-export const NOMINAL_ZOOM = 1.0;
-
-const TYPE_COLOR: Record<string, string> = {
-  GsnGoal: "#3d5a80",
-  GsnStrategy: "#2a6b4a",
-  GsnSolution: "#96660a",
-  GsnContext: "#5a3a8a",
-  GsnAssumption: "#5a3a8a",
-  GsnJustification: "#5a3a8a",
-};
-
-function buildElements(
-  structure: GoalStructure,
-  positions: Record<string, NodePosition>,
-  errorIds: Set<string>,
-): { nodes: ElementDefinition[]; edges: ElementDefinition[] } {
-  const elements = [...structure.elements.values()];
-  const nodes: ElementDefinition[] = elements.map((el) => {
-    const pos = positions[el.gsnId] ?? { x: 0, y: 0 };
-    const border = TYPE_COLOR[el.gkType] ?? "#5d6674";
-    const label = `${el.gsnId}\n${el.name || displayTypeName(el.gkType)}`;
-    return {
-      group: "nodes",
-      data: {
-        id: el.gsnId,
-        label,
-        border,
-        type: el.gkType,
-      },
-      position: { x: pos.x, y: pos.y },
-      classes: errorIds.has(el.gsnId) ? "error" : undefined,
-      grabbable: true,
-    };
-  });
-
-  const edges: ElementDefinition[] = [];
-  for (const el of elements) {
-    for (const t of el.supportedBy) {
-      if (!structure.elements.has(t)) continue;
-      edges.push({
-        group: "edges",
-        data: {
-          id: `${el.gsnId}->${t}`,
-          source: el.gsnId,
-          target: t,
-          label: "",
-        },
+export function GsnCanvas({ structure, positions, selectedId, revealToken, errorIds, onSelect, onDrag, projection = false }: Props) {
+  const viewport = useAppStore(s => s.viewport);
+  const setViewport = useAppStore(s => s.setViewport);
+  const theme = useAppStore(s => s.theme);
+  const nodeStyles = useAppStore(s => s.nodeStyles);
+  const [zoom, setZoom] = useState(projection ? 0.6 : viewport.zoom || 1);
+  const sessionKey = JSON.stringify([useAppStore.getState().vaultPath, structure.rootDir, revealToken]);
+  const [focus, setFocus] = useState<string | null>(() => !projection && viewport.focusId && structure.elements.has(viewport.focusId) ? viewport.focusId : null);
+  const [dragFrame, setDragFrame] = useState<CanvasBounds | null>(null);
+  const previousFocus = useRef(focus);
+  const restoringFocus = useRef<{ id: string | null } | null>(null);
+  const size = useRef<HTMLDivElement>(null);
+  const previousFrame = useRef<{ key: string; bounds: CanvasBounds; zoom: number; insetX: number; insetY: number } | null>(null);
+  const scroll = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ id: string | null; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const rendered = useMemo(() => {
+    if (!focus || !structure.elements.has(focus)) return structure;
+    const ids = new Set<string>(), queue = [focus];
+    while (queue.length) { const id = queue.shift()!; if (ids.has(id)) continue; ids.add(id); const el = structure.elements.get(id); if (el) queue.push(...el.supportedBy, ...el.inContextOf); }
+    return { ...structure, rootId: focus, elements: new Map([...structure.elements].filter(([id]) => ids.has(id))) };
+  }, [structure, focus]);
+  const bounds = useMemo(() => boundsFor(rendered, positions), [rendered, positions]);
+  const paddedBounds = useMemo(() => {
+    const inset = SCROLL_GUTTER / zoom;
+    return { x: bounds.x - inset, y: bounds.y - inset, width: bounds.width + inset * 2, height: bounds.height + inset * 2 };
+  }, [bounds, zoom]);
+  const frame = dragFrame ?? paddedBounds;
+  // The SVG still has its canonical viewBox. Its offset within a frozen frame cancels
+  // origin changes while an outermost node is dragged, so that node follows the pointer.
+  const html = useMemo(() => renderDiagram(rendered, positions, { theme, nodeStyles, selectedId, errorIds, projection, interactive: !projection, markerPrefix: projection ? "model" : "gsn" }), [rendered, positions, theme, nodeStyles, selectedId, errorIds, projection]);
+  const publish = (z = zoom, branch = focus) => { if (!projection && scroll.current) setViewport({ x: scroll.current.scrollLeft - SCROLL_GUTTER, y: scroll.current.scrollTop - SCROLL_GUTTER, zoom: z, ...(branch ? { focusId: branch } : {}) }); };
+  const centerSelected = (id: string | null = selectedId, z = 1) => {
+    const pos = id ? positions[id] : undefined;
+    if (!pos || !scroll.current) return;
+    const el = scroll.current;
+    el.scrollTo(Math.max(0, SCROLL_GUTTER + (pos.x - bounds.x) * z - el.clientWidth / 2), Math.max(0, SCROLL_GUTTER + (pos.y - bounds.y) * z - 200));
+  };
+  const changeZoom = (z: number, branch = focus) => { const next = Math.min(2, Math.max(0.12, z)); setZoom(next); publish(next, branch); };
+  const fit = () => {
+    const container = scroll.current;
+    if (!container) return;
+    const next = Math.min(1, Math.max(0.12, Math.min((container.clientWidth - 32) / bounds.width, (container.clientHeight - 32) / bounds.height)));
+    changeZoom(next);
+    requestAnimationFrame(() => {
+      container.scrollTo(SCROLL_GUTTER - Math.max(0, (container.clientWidth - bounds.width * next) / 2), SCROLL_GUTTER - Math.max(0, (container.clientHeight - bounds.height * next) / 2));
+      publish(next);
+    });
+  };
+  useLayoutEffect(() => {
+    const container = scroll.current, content = size.current;
+    if (!container || !content) return;
+    const outer = container.getBoundingClientRect(), inner = content.getBoundingClientRect();
+    const insetX = inner.left - outer.left + container.scrollLeft;
+    const insetY = inner.top - outer.top + container.scrollTop;
+    const key = `${sessionKey}:${focus ?? ""}:${projection}`;
+    const previous = previousFrame.current;
+    if (previous?.key === key && previous.zoom === zoom) {
+      // On release the canonical frame may grow or move. Compensate its origin and
+      // centering margin before paint; otherwise the complete diagram jumps.
+      const dx = (previous.bounds.x - frame.x) * zoom + insetX - previous.insetX;
+      const dy = (previous.bounds.y - frame.y) * zoom + insetY - previous.insetY;
+      if (dx || dy) {
+        container.scrollTo(container.scrollLeft + dx, container.scrollTop + dy);
+        if (!projection) setViewport({ x: container.scrollLeft - SCROLL_GUTTER, y: container.scrollTop - SCROLL_GUTTER, zoom, ...(focus ? { focusId: focus } : {}) });
+      }
+    }
+    previousFrame.current = { key, bounds: frame, zoom, insetX, insetY };
+  }, [frame, zoom, sessionKey, focus, projection, setViewport]);
+  useEffect(() => {
+    drag.current = null;
+    setDragFrame(null);
+    if (!projection) {
+      const sameSession = primarySession?.key === sessionKey;
+      const saved: ViewportState = useAppStore.getState().viewport;
+      const savedFocus = saved.focusId && structure.elements.has(saved.focusId) ? saved.focusId : null;
+      restoringFocus.current = { id: savedFocus };
+      setFocus(savedFocus);
+      setZoom(saved.zoom || 1);
+      const callback = requestAnimationFrame(() => {
+        if (sameSession || structure.layout.savedAt || savedFocus) scroll.current?.scrollTo(saved.x + SCROLL_GUTTER, saved.y + SCROLL_GUTTER);
+        else centerSelected(structure.rootId, saved.zoom || 1);
+        primarySession = { key: sessionKey };
+        publish(saved.zoom || 1, savedFocus);
       });
+      return () => cancelAnimationFrame(callback);
     }
-    for (const t of el.inContextOf) {
-      if (!structure.elements.has(t)) continue;
-      edges.push({
-        group: "edges",
-        data: {
-          id: `${el.gsnId}-ctx-${t}`,
-          source: el.gsnId,
-          target: t,
-          label: "ctx",
-        },
-        classes: "context",
+    setFocus(null);
+  }, [structure.rootDir, revealToken, projection, sessionKey]);
+  useEffect(() => { if (projection) fit(); }, [projection, structure.rootDir]);
+  useEffect(() => {
+    const changed = previousFocus.current !== focus;
+    previousFocus.current = focus;
+    if (restoringFocus.current) {
+      if (focus === restoringFocus.current.id) restoringFocus.current = null;
+      return;
+    }
+    if (changed) {
+      const callback = requestAnimationFrame(() => {
+        centerSelected(focus ?? structure.rootId, zoom);
+        publish(zoom, focus);
       });
+      return () => cancelAnimationFrame(callback);
     }
-  }
-  return { nodes, edges };
-}
-
-function bfsOrder(structure: GoalStructure): string[] {
-  const order: string[] = [];
-  const seen = new Set<string>();
-  const q = [structure.rootId];
-  while (q.length) {
-    const id = q.shift()!;
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    order.push(id);
-    const el = structure.elements.get(id);
-    if (!el) continue;
-    for (const c of [...el.supportedBy, ...el.inContextOf]) {
-      if (!seen.has(c)) q.push(c);
-    }
-  }
-  for (const el of structure.elements.values()) {
-    if (!seen.has(el.gsnId)) order.push(el.gsnId);
-  }
-  return order;
-}
-
-/**
- * Apply a usable view: never blow a single node up to fill the viewport.
- * Zoom stays within [MIN_ZOOM, MAX_ZOOM] (5× span); default is NOMINAL_ZOOM.
- */
-function applySmartView(cy: Core): void {
-  if (cy.nodes().length === 0) return;
-
-  // One or few nodes: keep nominal size, centered — do not cy.fit() (that zooms in huge)
-  if (cy.nodes().length <= 2) {
-    cy.zoom({ level: NOMINAL_ZOOM, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
-    cy.center(cy.nodes());
-    return;
-  }
-
-  cy.fit(cy.elements(), 48);
-  let z = cy.zoom();
-  if (z > NOMINAL_ZOOM) z = NOMINAL_ZOOM; // never larger than nominal for multi-node either
-  if (z < MIN_ZOOM) z = MIN_ZOOM;
-  if (z > MAX_ZOOM) z = MAX_ZOOM;
-  cy.zoom(z);
-  cy.center(cy.elements());
-}
-
-/** Grow scrollable canvas surface so content at min zoom still scrolls. */
-function sizeScrollSurface(cy: Core, scrollEl: HTMLElement | null, canvasEl: HTMLElement | null): void {
-  if (!scrollEl || !canvasEl || cy.nodes().length === 0) return;
-  const bb = cy.elements().boundingBox();
-  const pad = 120;
-  const modelW = Math.max(1, bb.w + pad * 2);
-  const modelH = Math.max(1, bb.h + pad * 2);
-  // At MIN_ZOOM the rendered size is model * MIN_ZOOM; ensure surface at least that
-  // relative to nominal, and at least the viewport size.
-  const viewW = scrollEl.clientWidth;
-  const viewH = scrollEl.clientHeight;
-  const needW = Math.max(viewW, modelW * NOMINAL_ZOOM + pad);
-  const needH = Math.max(viewH, modelH * NOMINAL_ZOOM + pad);
-  canvasEl.style.width = `${Math.ceil(needW)}px`;
-  canvasEl.style.height = `${Math.ceil(needH)}px`;
-  cy.resize();
-}
-
-export function GsnCanvas({
-  structure,
-  positions,
-  selectedId,
-  revealToken,
-  graphEpoch,
-  errorIds,
-  onSelect,
-  onDrag,
-}: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cyRef = useRef<Core | null>(null);
-  const revealTimers = useRef<number[]>([]);
-  const lastReveal = useRef(-1);
-  const onSelectRef = useRef(onSelect);
-  const onDragRef = useRef(onDrag);
-  onSelectRef.current = onSelect;
-  onDragRef.current = onDrag;
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const cy = cytoscape({
-      container: containerRef.current,
-      style: [
-        {
-          selector: "node",
-          style: {
-            shape: "round-rectangle",
-            width: NODE_W,
-            height: NODE_H,
-            label: "data(label)",
-            "text-wrap": "wrap",
-            "text-max-width": NODE_W - 16,
-            "font-size": 11,
-            "font-family": "IBM Plex Sans, sans-serif",
-            "text-valign": "center",
-            "text-halign": "center",
-            color: "#1a1d23",
-            "background-color": "#fbf8f2",
-            "border-width": 2,
-            "border-color": "data(border)",
-            "overlay-padding": 4,
-            "min-zoomed-font-size": 8,
-          },
-        },
-        {
-          selector: "node:selected",
-          style: {
-            "border-color": "#2f5d6e",
-            "border-width": 3,
-          },
-        },
-        {
-          selector: "node.error",
-          style: {
-            "border-color": "#be3536",
-          },
-        },
-        {
-          selector: "edge",
-          style: {
-            width: 1.5,
-            "curve-style": "bezier",
-            "target-arrow-shape": "triangle",
-            "arrow-scale": 0.9,
-            "line-color": "#8a8070",
-            "target-arrow-color": "#8a8070",
-            label: "data(label)",
-            "font-size": 8,
-            color: "#5d6674",
-            "text-rotation": "autorotate",
-            "text-margin-y": -8,
-          },
-        },
-        {
-          selector: "edge.context",
-          style: {
-            "line-style": "dashed",
-            "target-arrow-shape": "triangle-backcurve",
-            label: "ctx",
-          },
-        },
-      ] as unknown as cytoscape.StylesheetJson,
-      layout: { name: "preset" },
-      wheelSensitivity: 0.2,
-      minZoom: MIN_ZOOM,
-      maxZoom: MAX_ZOOM,
-      userZoomingEnabled: true,
-      userPanningEnabled: true,
-    });
-    cyRef.current = cy;
-
-    cy.on("tap", "node", (evt) => {
-      onSelectRef.current(evt.target.id());
-    });
-    cy.on("tap", (evt) => {
-      if (evt.target === cy) onSelectRef.current(null);
-    });
-    cy.on("dragfree", "node", (evt) => {
-      const n = evt.target;
-      const p = n.position();
-      onDragRef.current(n.id(), p.x, p.y);
-      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-    });
-    cy.on("zoom pan", () => {
-      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-    });
-
-    const ro = new ResizeObserver(() => {
-      cy.resize();
-      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-    });
-    if (scrollRef.current) ro.observe(scrollRef.current);
-
-    return () => {
-      revealTimers.current.forEach((t) => window.clearTimeout(t));
-      ro.disconnect();
-      cy.destroy();
-      cyRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const cy = cyRef.current;
-    if (!cy) return;
-    if (revealToken === lastReveal.current && cy.nodes().length > 0) return;
-    lastReveal.current = revealToken;
-
-    revealTimers.current.forEach((t) => window.clearTimeout(t));
-    revealTimers.current = [];
-    cy.elements().remove();
-
-    const { nodes, edges } = buildElements(structure, positions, errorIds);
-    const order = bfsOrder(structure);
-    const nodeById = new Map(nodes.map((n) => [n.data!.id as string, n]));
-    const totalBudget = 1200;
-    const step = Math.max(25, Math.min(70, totalBudget / Math.max(order.length, 1)));
-
-    const finishAll = () => {
-      revealTimers.current.forEach((t) => window.clearTimeout(t));
-      revealTimers.current = [];
-      for (const id of order) {
-        const n = nodeById.get(id);
-        if (n && !cy.getElementById(id).nonempty()) cy.add(n);
-      }
-      for (const e of edges) {
-        const eid = e.data!.id as string;
-        if (!cy.getElementById(eid).nonempty()) {
-          const s = e.data!.source as string;
-          const t = e.data!.target as string;
-          if (cy.getElementById(s).nonempty() && cy.getElementById(t).nonempty()) cy.add(e);
-        }
-      }
-      if (selectedId) cy.getElementById(selectedId).select();
-      sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-      applySmartView(cy);
-    };
-
-    const onSkip = () => finishAll();
-    const el = containerRef.current;
-    el?.addEventListener("pointerdown", onSkip, { once: true });
-    const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") finishAll();
-    };
-    window.addEventListener("keydown", onKey);
-
-    order.forEach((id, i) => {
-      const t = window.setTimeout(() => {
-        const n = nodeById.get(id);
-        if (n && !cy.getElementById(id).nonempty()) cy.add(n);
-        for (const e of edges) {
-          const eid = e.data!.id as string;
-          if (cy.getElementById(eid).nonempty()) continue;
-          const s = e.data!.source as string;
-          const tgt = e.data!.target as string;
-          if (cy.getElementById(s).nonempty() && cy.getElementById(tgt).nonempty()) cy.add(e);
-        }
-        if (i === order.length - 1) {
-          if (selectedId) cy.getElementById(selectedId).select();
-          sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-          applySmartView(cy);
-        }
-      }, i * step);
-      revealTimers.current.push(t);
-    });
-    revealTimers.current.push(window.setTimeout(finishAll, totalBudget + 80));
-
-    return () => {
-      el?.removeEventListener("pointerdown", onSkip);
-      window.removeEventListener("keydown", onKey);
-      revealTimers.current.forEach((t) => window.clearTimeout(t));
-      revealTimers.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealToken, structure.rootId]);
-
-  useEffect(() => {
-    const cy = cyRef.current;
-    if (!cy) return;
-    if (revealTimers.current.length > 0 && cy.nodes().length === 0) return;
-
-    const { nodes, edges } = buildElements(structure, positions, errorIds);
-    const wantNodes = new Set(nodes.map((n) => n.data!.id as string));
-    const wantEdges = new Set(edges.map((e) => e.data!.id as string));
-
-    cy.nodes().forEach((n) => {
-      if (!wantNodes.has(n.id())) n.remove();
-    });
-    cy.edges().forEach((e) => {
-      if (!wantEdges.has(e.id())) e.remove();
-    });
-
-    let added = false;
-    for (const n of nodes) {
-      const id = n.data!.id as string;
-      const existing = cy.getElementById(id);
-      if (existing.nonempty()) {
-        existing.data(n.data!);
-        existing.position(n.position!);
-        if (errorIds.has(id)) existing.addClass("error");
-        else existing.removeClass("error");
-      } else {
-        cy.add(n);
-        added = true;
-      }
-    }
-    for (const e of edges) {
-      const id = e.data!.id as string;
-      if (!cy.getElementById(id).nonempty()) {
-        const s = e.data!.source as string;
-        const t = e.data!.target as string;
-        if (cy.getElementById(s).nonempty() && cy.getElementById(t).nonempty()) {
-          cy.add(e);
-          added = true;
-        }
-      }
-    }
-
-    if (selectedId) {
-      cy.elements().unselect();
-      cy.getElementById(selectedId).select();
-    }
-    sizeScrollSurface(cy, scrollRef.current, containerRef.current);
-    if (added && cy.nodes().length <= 3) {
-      applySmartView(cy);
-    }
-  }, [structure, positions, graphEpoch, errorIds, selectedId]);
-
-  useEffect(() => {
-    const cy = cyRef.current;
-    if (!cy) return;
-    cy.elements().unselect();
-    if (selectedId) cy.getElementById(selectedId).select();
-  }, [selectedId]);
-
-  return (
-    <div className="gk-canvas-scroll" ref={scrollRef}>
-      <div className="gk-canvas" ref={containerRef} data-testid="gsn-canvas" />
+  }, [focus, projection, sessionKey]);
+  const nodeFrom = (target: EventTarget | null) => (target as Element)?.closest?.("[data-node-id]")?.getAttribute("data-node-id") ?? null;
+  return <div className="gk-diagram-shell">
+    <div className="gk-navigation" aria-label="Diagram navigation">
+      <button className="gk-btn" onClick={fit}>Fit argument</button>
+      <button className="gk-btn" onClick={() => { changeZoom(1); requestAnimationFrame(() => centerSelected(selectedId, 1)); }}>100%</button>
+      <button className="gk-btn" aria-label="Zoom out" onClick={() => changeZoom(zoom / 1.2)}>−</button>
+      <output aria-label="Diagram zoom">{Math.round(zoom * 100)}%</output>
+      <button className="gk-btn" aria-label="Zoom in" onClick={() => changeZoom(zoom * 1.2)}>+</button>
+      {!projection && <><span className="gk-toolbar-divider"/><button className="gk-btn" disabled={!selectedId} onClick={() => { setFocus(selectedId); changeZoom(1, selectedId); }}>Read selected branch</button>{focus && <button className="gk-btn" onClick={() => { setFocus(null); publish(zoom, null); }}>Whole argument</button>}</>}
+      <span className="gk-navigation-hint">{focus ? `Branch ${focus}` : zoom < 0.75 ? "Overview · use 100% to read" : "Drag the page to pan · select a symbol to inspect"}</span>
     </div>
-  );
+    <div className="gk-canvas-scroll" ref={scroll} data-testid={projection ? "model-canvas" : "gsn-canvas"} onScroll={() => publish()}
+      onPointerDown={event => {
+        if (event.button !== 0) return;
+        const id = nodeFrom(event.target), pos = id && !projection ? positions[id] : undefined;
+        drag.current = { id: projection ? null : id, x: event.clientX, y: event.clientY, startX: pos?.x ?? scroll.current!.scrollLeft, startY: pos?.y ?? scroll.current!.scrollTop, moved: false };
+        if (pos) setDragFrame({ ...paddedBounds });
+        if (!projection && id) onSelect(id);
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }} onPointerMove={event => {
+        const d = drag.current; if (!d) return;
+        const dx = event.clientX - d.x, dy = event.clientY - d.y;
+        if (Math.abs(dx) + Math.abs(dy) < 4 && !d.moved) return;
+        d.moved = true;
+        if (d.id) onDrag(d.id, d.startX + dx / zoom, d.startY + dy / zoom);
+        else scroll.current?.scrollTo(d.startX - dx, d.startY - dy);
+      }} onPointerUp={event => { drag.current = null; setDragFrame(null); if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={() => { drag.current = null; setDragFrame(null); }}
+      onKeyDown={event => { const id = nodeFrom(event.target); if (id && ["Enter", " "].includes(event.key)) { event.preventDefault(); if (!projection) onSelect(id); } }}>
+      <div className="gk-svg-size" ref={size} style={{ width: frame.width * zoom, height: frame.height * zoom, margin: 0 }}>
+        <div className="gk-svg-stage" style={{ position: "relative", transform: `scale(${zoom})`, width: frame.width, height: frame.height }}>
+          <div style={{ position: "absolute", left: bounds.x - frame.x, top: bounds.y - frame.y }} dangerouslySetInnerHTML={{ __html: html }}/>
+        </div>
+      </div>
+    </div>
+    {!projection && <div className="gk-legend"><span>GSN v3 · core notation</span><span>▰ Strategy</span><span>○ Solution</span><span>◇ Undeveloped</span><span>Filled arrow: support</span><span>Hollow arrow: context</span></div>}
+  </div>;
 }

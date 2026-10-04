@@ -3,6 +3,7 @@
  */
 
 import type { VaultFile } from "../core/vault/load";
+import { firesatVaultFiles } from "../examples/firesat";
 
 export type FsBackend = "tauri" | "memory" | "fsa";
 
@@ -15,6 +16,15 @@ const memory = new Map<string, string>();
 let demoSeeded = false;
 
 const VAULT_INDEX_KEY = "goalkeeper.memoryVaults";
+
+/** Retain the active adapter while a candidate directory is being opened. */
+export function captureVaultSelection() { return { backend, vaultRoot, fsaRoot }; }
+export function restoreVaultSelection(selection: ReturnType<typeof captureVaultSelection>): void {
+  backend = selection.backend; vaultRoot = selection.vaultRoot; fsaRoot = selection.fsaRoot;
+}
+function isMissingFile(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "NotFoundError";
+}
 
 export function getBackend(): FsBackend {
   return backend;
@@ -165,7 +175,6 @@ name: Argument over hazards
 statement: Argue over each identified hazard class.
 supported_by:
   - "[[G2]]"
-  - "[[Sn1]]"
 undeveloped: false
 ---
 # S1 — Argument over hazards
@@ -174,7 +183,6 @@ Argue over each identified hazard class.
 
 ## Supported By
 - [[G2]]
-- [[Sn1]]
 `,
   );
   put(
@@ -239,32 +247,12 @@ gk_schema: 1
 gk_type: Evidence
 name: TR-1
 evidence_kind: Test
-statement: Integration test suite passed for hazard H1 mitigations.
+statement: Illustrative test-report placeholder; no operational test result is asserted.
 ---
 # TR-1
 
-Integration test suite passed for hazard H1 mitigations.
+Illustrative test-report placeholder; no operational test result is asserted.
 `,
-  );
-  put(
-    "Safe-System/_layout.json",
-    JSON.stringify(
-      {
-        schemaVersion: 1,
-        rootGsnId: "G1",
-        tool: "goalkeeper",
-        viewport: { x: 0, y: 0, zoom: 1 },
-        nodes: {
-          G1: { x: 120, y: 40 },
-          S1: { x: 120, y: 160 },
-          G2: { x: 40, y: 280 },
-          Sn1: { x: 280, y: 280 },
-          C1: { x: 360, y: 40 },
-        },
-      },
-      null,
-      2,
-    ),
   );
   put(
     ".goalkeeper/vault.json",
@@ -303,8 +291,7 @@ export async function pickBrowserDirectory(): Promise<{ path: string; mode: FsBa
   } catch (e) {
     // user cancelled or denied
     if (e instanceof DOMException && e.name === "AbortError") return null;
-    console.error("showDirectoryPicker failed", e);
-    return null;
+    throw e;
   }
 }
 
@@ -326,8 +313,7 @@ export async function pickVaultDirectory(): Promise<{ path: string; mode: FsBack
       }
       return null;
     } catch (e) {
-      console.error("Tauri dialog failed", e);
-      return null;
+      throw e;
     }
   }
   // Browser: try native directory picker
@@ -374,17 +360,12 @@ export async function listVaultFiles(): Promise<VaultFile[]> {
     return walkFsa(fsaRoot, "");
   }
 
+  const selectedRoot = vaultRoot;
   const { readDir, readTextFile } = await import("@tauri-apps/plugin-fs");
   const out: VaultFile[] = [];
   async function walk(rel: string): Promise<void> {
-    const abs = rel ? `${vaultRoot}/${rel}` : vaultRoot!;
-    let entries;
-    try {
-      entries = await readDir(abs);
-    } catch (e) {
-      console.error("readDir failed", abs, e);
-      return;
-    }
+    const abs = rel ? `${selectedRoot}/${rel}` : selectedRoot!;
+    const entries = await readDir(abs);
     for (const e of entries) {
       const name = e.name ?? "";
       if (name.startsWith(".") && name !== ".goalkeeper") continue;
@@ -393,12 +374,8 @@ export async function listVaultFiles(): Promise<VaultFile[]> {
         if (name === ".obsidian") continue;
         await walk(childRel);
       } else if (name.endsWith(".md") || name.endsWith(".json")) {
-        try {
-          const text = await readTextFile(`${vaultRoot}/${childRel}`);
-          out.push({ path: childRel.replace(/\\/g, "/"), text });
-        } catch (err) {
-          console.error("readTextFile failed", childRel, err);
-        }
+        const text = await readTextFile(`${selectedRoot}/${childRel}`);
+        out.push({ path: childRel.replace(/\\/g, "/"), text });
       }
     }
   }
@@ -425,7 +402,7 @@ async function walkFsa(dir: any, rel: string): Promise<VaultFile[]> {
 }
 
 export async function writeVaultFile(relPath: string, text: string): Promise<void> {
-  const path = relPath.replace(/\\/g, "/");
+  const path = validateVaultPath(relPath);
 
   if (isMemoryBackend()) {
     const id = currentMemoryVaultId();
@@ -439,15 +416,24 @@ export async function writeVaultFile(relPath: string, text: string): Promise<voi
   }
 
   if (!vaultRoot) throw new Error("No vault open");
-  const { writeTextFile, mkdir, exists } = await import("@tauri-apps/plugin-fs");
+  const selectedRoot = vaultRoot;
+  const { writeTextFile, mkdir, exists, rename, remove } = await import("@tauri-apps/plugin-fs");
   const parts = path.split("/");
   if (parts.length > 1) {
-    const dir = `${vaultRoot}/${parts.slice(0, -1).join("/")}`;
+    const dir = `${selectedRoot}/${parts.slice(0, -1).join("/")}`;
     if (!(await exists(dir))) {
       await mkdir(dir, { recursive: true });
     }
   }
-  await writeTextFile(`${vaultRoot}/${path}`, text);
+  const destination = `${selectedRoot}/${path}`;
+  const temporary = `${destination}.tmp-${crypto.randomUUID()}`;
+  try {
+    await writeTextFile(temporary, text);
+    await rename(temporary, destination);
+  } catch (error) {
+    try { await remove(temporary); } catch { /* preserve original failure */ }
+    throw error;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -459,12 +445,17 @@ async function writeFsa(root: any, relPath: string, text: string): Promise<void>
   }
   const fileHandle = await dir.getFileHandle(parts[parts.length - 1], { create: true });
   const writable = await fileHandle.createWritable();
-  await writable.write(text);
-  await writable.close();
+  try {
+    await writable.write(text);
+    await writable.close();
+  } catch (error) {
+    try { await writable.abort(); } catch { /* preserve the original write error */ }
+    throw error;
+  }
 }
 
 export async function readVaultFile(relPath: string): Promise<string | null> {
-  const path = relPath.replace(/\\/g, "/");
+  const path = validateVaultPath(relPath);
   if (isMemoryBackend()) {
     const id = currentMemoryVaultId();
     return memory.get(memoryKey(id, path)) ?? memory.get(path) ?? null;
@@ -479,17 +470,17 @@ export async function readVaultFile(relPath: string): Promise<string | null> {
       const fh = await dir.getFileHandle(parts[parts.length - 1]);
       const file = await fh.getFile();
       return await file.text();
-    } catch {
-      return null;
+    } catch (error) {
+      if (isMissingFile(error)) return null;
+      throw error;
     }
   }
   if (!vaultRoot) return null;
-  try {
-    const { readTextFile } = await import("@tauri-apps/plugin-fs");
-    return await readTextFile(`${vaultRoot}/${path}`);
-  } catch {
-    return null;
-  }
+  const selectedRoot = vaultRoot;
+  const { readTextFile, exists } = await import("@tauri-apps/plugin-fs");
+  const absolute = `${selectedRoot}/${path}`;
+  if (!(await exists(absolute))) return null;
+  return await readTextFile(absolute);
 }
 
 export async function ensureVaultMeta(): Promise<void> {
@@ -509,4 +500,37 @@ export async function ensureVaultMeta(): Promise<void> {
       ),
     );
   }
+}
+
+/** Reject path escapes before reaching any storage adapter. */
+export function validateVaultPath(path: string): string {
+  if (!path || path.startsWith("/") || /^[A-Za-z]:/.test(path) || path.includes("\\") || path.includes("\0") || path.split("/").some(p => p === ".." || p === "." || !p)) {
+    throw new Error("Use a relative file path inside the selected vault.");
+  }
+  return path;
+}
+export async function deleteVaultFile(relPath: string): Promise<void> {
+  const path = validateVaultPath(relPath);
+  if (isMemoryBackend()) { memory.delete(memoryKey(currentMemoryVaultId(), path)); return; }
+  if (isFsaBackend()) {
+    const parts = path.split("/"); let dir = fsaRoot;
+    try {
+      for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part);
+      await dir.removeEntry(parts[parts.length - 1]);
+    } catch (error) { if (!isMissingFile(error)) throw error; }
+    return;
+  }
+  if (!vaultRoot) throw new Error("No vault open");
+  const selectedRoot = vaultRoot;
+  const { remove, exists } = await import("@tauri-apps/plugin-fs");
+  if (await exists(`${selectedRoot}/${path}`)) await remove(`${selectedRoot}/${path}`);
+}
+/** Examples open in an isolated session vault; local user files are untouched. */
+export function openFireSatVault(): string {
+  const id = "firesat-example";
+  const path = openNamedMemoryVault(id, { empty: true });
+  if (![...memory.keys()].some(key => key.startsWith(`${id}::`) && key.endsWith(".md"))) {
+    for (const file of firesatVaultFiles) memory.set(memoryKey(id, file.path), file.text);
+  }
+  return path;
 }

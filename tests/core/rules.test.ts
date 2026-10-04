@@ -34,9 +34,9 @@ describe("canLink", () => {
     expect(canLink("GsnGoal", "GsnGoal", "SUPPORTED_BY")).toBe(true);
     expect(canLink("GsnGoal", "GsnSolution", "SUPPORTED_BY")).toBe(true);
   });
-  it("allows Strategy -> Goal / Solution", () => {
+  it("allows Strategy -> Goal and rejects Strategy -> Solution per GSN v3", () => {
     expect(canLink("GsnStrategy", "GsnGoal", "SUPPORTED_BY")).toBe(true);
-    expect(canLink("GsnStrategy", "GsnSolution", "SUPPORTED_BY")).toBe(true);
+    expect(canLink("GsnStrategy", "GsnSolution", "SUPPORTED_BY")).toBe(false);
     expect(canLink("GsnStrategy", "GsnStrategy", "SUPPORTED_BY")).toBe(false);
   });
   it("allows context links from Goal and Strategy", () => {

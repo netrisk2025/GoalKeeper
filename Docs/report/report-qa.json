@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-04",
+  "pdfPages": 13,
+  "method": "Poppler rendering; all-page contact inspection and full-size checks of qualification and screenshot pages. Six source-renderer storyboard plates inspected.",
+  "result": "PASS: no observed clipping, overlaps, blank pages or unreadable placeholder text; qualification limits explicit.",
+  "checksums": {
+    "GoalKeeper-Development-Report.pdf": "222806296a6faab490114d1712da112eee43d28160a0421d5fdd79ddf4c9e140",
+    "GoalKeeper-Development-Report.html": "d260c334ca6c98221a8cd0323cbb318b9d84209d0afb1bbecdad0e4bcbee90cb"
+  },
+  "requirementMatrix": {
+    "PASS": 42,
+    "PARTIAL": 10,
+    "rows": 52
+  },
+  "testedCommit": "6bc0a0821e748662955a0e44968de9588fc8c8f6",
+  "outputCopiesMatch": true,
+  "html": "Self-contained SVG and screenshot pixels; semantic counts and final verification text checked; no separate HTML browser automation performed."
+}

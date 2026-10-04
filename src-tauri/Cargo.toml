@@ -1,6 +1,6 @@
 [package]
 name = "goalkeeper"
-version = "0.1.0"
+version = "0.2.0"
 description = "GoalKeeper — standalone GSN assurance-case desktop app"
 authors = ["netrisk2025"]
 edition = "2021"

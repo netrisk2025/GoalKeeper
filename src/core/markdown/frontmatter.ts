@@ -39,23 +39,19 @@ function parseYamlSubset(src: string): Record<string, unknown> {
       continue;
     }
     if (/^\s/.test(raw)) {
-      i++;
-      continue;
+      throw new Error(`Unsupported nested or multiline YAML at frontmatter line ${i + 1}; use flat scalar fields and block lists.`);
     }
     const m = raw.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
-    if (!m) {
-      i++;
-      continue;
-    }
+    if (!m) throw new Error(`Unsupported YAML at frontmatter line ${i + 1}.`);
     const key = m[1];
     const rest = m[2];
     if (rest === "") {
-      const items: string[] = [];
+      const items: unknown[] = [];
       let j = i + 1;
       while (j < lines.length) {
         const lm = lines[j].match(/^\s+-\s+(.*)$/);
         if (!lm) break;
-        items.push(unquote(lm[1].trim()));
+        items.push(parseScalar(lm[1].trim()));
         j++;
       }
       if (items.length > 0) {
@@ -67,11 +63,16 @@ function parseYamlSubset(src: string): Record<string, unknown> {
       i++;
       continue;
     }
-    if (rest === "[]") {
-      data[key] = [];
+    if (rest.startsWith("[")) {
+      try {
+        const parsed: unknown = JSON.parse(rest);
+        if (!Array.isArray(parsed) || parsed.some(item => item !== null && !["string", "number", "boolean"].includes(typeof item))) throw new Error("Nested array");
+        data[key] = parsed;
+      } catch { throw new Error(`Unsupported array for ${key}; use a JSON-compatible scalar array or block list.`); }
       i++;
       continue;
     }
+    if (/^[{|>!&*]/.test(rest)) throw new Error(`Unsupported complex YAML for ${key}; use a quoted scalar or block list.`);
     data[key] = parseScalar(rest);
     i++;
   }
@@ -125,19 +126,7 @@ function serializeYamlSubset(data: Record<string, unknown>): string {
 }
 
 function formatScalar(value: unknown): string {
-  const s = String(value ?? "");
-  if (
-    s === "" ||
-    /[:#{}[\],&*?|>!%@`\n]/.test(s) ||
-    s.startsWith(" ") ||
-    s.endsWith(" ") ||
-    s === "true" ||
-    s === "false" ||
-    s === "null" ||
-    s.includes("[[") ||
-    s.includes("]]")
-  ) {
-    return JSON.stringify(s);
-  }
-  return s;
+  // Quote every string to preserve numeric-looking IDs, booleans and punctuation.
+  if (typeof value === "string") return JSON.stringify(value);
+  return JSON.stringify(value ?? "");
 }

@@ -1,0 +1,379 @@
+{
+  "baseline": "SRS v1.0",
+  "date": "2026-10-04",
+  "interpretation": "PASS identifies evidence within the stated execution scope. PARTIAL records a required procedure/platform observation not yet completed. Automated adapter tests do not qualify native GUI or physical-disk behavior.",
+  "results": [
+    {
+      "id": "1",
+      "title": "Core GSN profile",
+      "method": "Analysis",
+      "status": "PASS",
+      "evidence": "Core matrix, import diagnostics and mutation tests; GSN extension scope explicitly excluded."
+    },
+    {
+      "id": "1.1",
+      "title": "Six element types",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts round-trips each of the six GSN types."
+    },
+    {
+      "id": "1.2",
+      "title": "Legal support matrix",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts exercises all ordered type pairs; rules/store tests reject Strategy\u2192Solution."
+    },
+    {
+      "id": "1.3",
+      "title": "Legal contextual matrix",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts exercises the exact contextual type matrix."
+    },
+    {
+      "id": "1.4",
+      "title": "Acyclic mutations",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "graph.test.ts and store.test.ts reject cycles without mutating the prior argument."
+    },
+    {
+      "id": "1.5",
+      "title": "Duplicate relationships",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "store.test.ts rejects duplicate links while preserving the graph."
+    },
+    {
+      "id": "1.6",
+      "title": "Root and identifiers",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts covers missing/non-Goal/second/incoming roots, duplicate IDs and unreachable elements."
+    },
+    {
+      "id": "1.7",
+      "title": "Imported rule violations",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts keeps illegal imported links and cycles inspectable with affected IDs."
+    },
+    {
+      "id": "1.8",
+      "title": "Undeveloped semantics",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance/store/wizard tests restrict undeveloped state to G/S and preserve it through edits."
+    },
+    {
+      "id": "2",
+      "title": "GSN presentation",
+      "method": "Inspection",
+      "status": "PARTIAL",
+      "evidence": "Symbol/arrow/text tests and visual storyboard inspection pass; theme/native restart qualification remains bounded as noted in2.8."
+    },
+    {
+      "id": "2.1",
+      "title": "Element geometry",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "presentation.test.ts checks the six shapes, true circle and Context geometry; report plates visually inspected."
+    },
+    {
+      "id": "2.2",
+      "title": "Notation decorators",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "presentation.test.ts checks A/J placement and undeveloped diamonds; rendered report plates inspected."
+    },
+    {
+      "id": "2.3",
+      "title": "Relationship arrows",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "presentation.test.ts checks filled/hollow target arrowheads in both themes; rendered plates inspected."
+    },
+    {
+      "id": "2.4",
+      "title": "Complete readable statements",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "presentation.test.ts plus production-browser geometry measurement: 16 charts,144 nodes,1,314 text lines; 0 outside shapes; 16px statements and complete normalized text, including long tokens/IDs and XML."
+    },
+    {
+      "id": "2.5",
+      "title": "Contrast",
+      "method": "Analysis",
+      "status": "PASS",
+      "evidence": "presentation.test.ts computes text and outline/arrow contrast in both shipped palettes."
+    },
+    {
+      "id": "2.6",
+      "title": "Restrained theme",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "Inspected rendered primary GSN figures and supplied application screenshots; ornament stays outside symbols."
+    },
+    {
+      "id": "2.7",
+      "title": "Diagram workspace",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "Browser observation at1440\u00d7900: canvas1440px / workspace1440px =100%, above80% criterion."
+    },
+    {
+      "id": "2.8",
+      "title": "Theme selection",
+      "method": "Test",
+      "status": "PARTIAL",
+      "evidence": "Dark mode persisted across production-browser reload. Native application restart remains unqualified; browser evidence is not described as native desktop qualification."
+    },
+    {
+      "id": "3",
+      "title": "Alternate model view",
+      "method": "Demonstration",
+      "status": "PASS",
+      "evidence": "View-menu pop-up observed; close and Escape return to primary view without a persistent model column."
+    },
+    {
+      "id": "3.1",
+      "title": "Projection parity",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "presentation.test.ts and browser observation match18IDs in primary/projection graph and model text."
+    },
+    {
+      "id": "3.2",
+      "title": "Projection boundary",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "Projection displays illustrative/not-parser-validated limitation in graph/text view."
+    },
+    {
+      "id": "3.3",
+      "title": "Pop-up accessibility",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "Coordinating browser review verified forward/reverse focus trap, Escape and focus return to View."
+    },
+    {
+      "id": "4",
+      "title": "Layout and navigation",
+      "method": "Test",
+      "status": "PARTIAL",
+      "evidence": "ELK arrangement and browser navigation pass; aggregate remains partial because native saved-vault reopen is not qualified (4.2)."
+    },
+    {
+      "id": "4.1",
+      "title": "Stable manual positions",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "store.test.ts preserves manual positions through edits, evidence, selection and validation."
+    },
+    {
+      "id": "4.2",
+      "title": "Saved layout",
+      "method": "Test",
+      "status": "PARTIAL",
+      "evidence": "Store tests restore saved viewport/positions; production-browser Save Layout/Last Saved restored manually moved G4 coordinates. Native disk reopen remains unqualified."
+    },
+    {
+      "id": "4.3",
+      "title": "Layout merge",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "layout/store tests restore extant positions, place new nodes and drop deleted-node positions."
+    },
+    {
+      "id": "4.4",
+      "title": "Layout authority",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "store.test.ts confirms only Save Layout writes layout; semantics and automatic arrangement do not."
+    },
+    {
+      "id": "4.5",
+      "title": "Diagram navigation",
+      "method": "Demonstration",
+      "status": "PASS",
+      "evidence": "Production browser measured drag(-60,-70) as(-60.000015,-70.166687)px; reverse move restored identical rect. Pan/zoom/fit/selection and branch/whole-case restoration observed at1440\u00d7900."
+    },
+    {
+      "id": "5",
+      "title": "Standalone authoring and persistence",
+      "method": "Demonstration",
+      "status": "PARTIAL",
+      "evidence": "Local model/store workflows pass; native vault selection/offline end-to-end operation is not qualified by core/browser tests."
+    },
+    {
+      "id": "5.1",
+      "title": "Vault workflow",
+      "method": "Demonstration",
+      "status": "PARTIAL",
+      "evidence": "Vault/root workflow exists and store loading is tested; native directory-picker and reopen run remain unqualified."
+    },
+    {
+      "id": "5.2",
+      "title": "Element editing",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "store.test.ts creates, edits, saves and deletes non-root instances of all six types."
+    },
+    {
+      "id": "5.3",
+      "title": "Semantic markdown",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "frontmatter/markdown/compliance tests verify semantic and provenance round-trips with wikilinks."
+    },
+    {
+      "id": "5.4",
+      "title": "Semantic layout separation",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance.test.ts verifies semantic content with absent/stale layout; layout tests reconcile positions."
+    },
+    {
+      "id": "5.5",
+      "title": "Actionable validation",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance/rules tests assert severity, affected ID and rule-specific diagnostics."
+    },
+    {
+      "id": "5.6",
+      "title": "Save errors",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "fs/store tests propagate read/write failures, preserve dirty data and reject misleading partial-load success."
+    },
+    {
+      "id": "5.7",
+      "title": "Data privacy",
+      "method": "Analysis",
+      "status": "PARTIAL",
+      "evidence": "Offline design/source boundary reviewed. Runtime network observation was unavailable through the browser-control API, so no measured no-transmission claim is made."
+    },
+    {
+      "id": "5.8",
+      "title": "Atomic file replacement",
+      "method": "Test",
+      "status": "PARTIAL",
+      "evidence": "fs.test.ts checks native temporary-write/rename and failure behavior via mocks; native runtime failure injection unqualified."
+    },
+    {
+      "id": "5.9",
+      "title": "Vault-relative paths",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "fs.test.ts rejects absolute/traversal paths before native and memory operations."
+    },
+    {
+      "id": "5.10",
+      "title": "Wizard evidence control",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "wizard.test.ts verifies Skip/dismiss do not mutate; Apply required and undeveloped state preserved."
+    },
+    {
+      "id": "6",
+      "title": "Evidence and review exports",
+      "method": "Inspection",
+      "status": "PARTIAL",
+      "evidence": "Evidence sufficiency and approval limits are explicit; aggregate remains partial because browser SVG-download completion was not observed (6.4)."
+    },
+    {
+      "id": "6.1",
+      "title": "Evidence association",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "Store/compliance tests round-trip multiple references; production browser displays source disclosures/metadata and navigates to the Solution. Evidence notes stay outside the Solution circle."
+    },
+    {
+      "id": "6.2",
+      "title": "Incomplete evidence",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "compliance/rules tests flag no, missing and ambiguous evidence references."
+    },
+    {
+      "id": "6.3",
+      "title": "Unfinished support",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "rules/compliance tests preserve incomplete/undeveloped distinctions; FireSat has five intentional open Goals."
+    },
+    {
+      "id": "6.4",
+      "title": "SVG figure export",
+      "method": "Test",
+      "status": "PARTIAL",
+      "evidence": "SVG serialization tests and reopened renderer figures pass. The application download action produced no observable file in the in-app browser; browser delivery completion remains unqualified."
+    },
+    {
+      "id": "6.5",
+      "title": "Structured exports",
+      "method": "Test",
+      "status": "PASS",
+      "evidence": "Serialization tests pass; production JSON view shows18elements,17core GSN relationships plus2HAS_EVIDENCE references, and2evidence notes."
+    },
+    {
+      "id": "6.6",
+      "title": "FireSat example",
+      "method": "Analysis",
+      "status": "PASS",
+      "evidence": "firesat.test.ts verifies exact source Loss identity, inventory and routes against bundled snapshot."
+    },
+    {
+      "id": "6.7",
+      "title": "Illustrative evidence limits",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "firesat.test.ts and source-storyboard review preserve illustrative-value limits and independent-evidence gaps."
+    },
+    {
+      "id": "6.8",
+      "title": "Development storyboard",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "Six renderer/ELK storyboard plates plus source/action/reviewer explanations included in HTML/PDF; PDF visually inspected."
+    },
+    {
+      "id": "7",
+      "title": "SSTPA integration boundary",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "Architecture separates core semantics, rendering and storage; mappings and qualification boundaries documented."
+    },
+    {
+      "id": "7.1",
+      "title": "Integration mapping",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "Architecture mapping covers GSN types/edges/evidence/layout and deferred SSTPA host responsibilities."
+    },
+    {
+      "id": "7.2",
+      "title": "Read-only source isolation",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "All delivered edits are in GoalKeeper; source projects used read-only by the implementation team."
+    },
+    {
+      "id": "7.3",
+      "title": "Verification record",
+      "method": "Inspection",
+      "status": "PASS",
+      "evidence": "This52-row matrix and final logs record161tests/15files, typecheck/build, browser observations, native compile with0tests and conservative unqualified-runtime results."
+    }
+  ],
+  "testedCommit": "6bc0a0821e748662955a0e44968de9588fc8c8f6",
+  "evidenceFiles": [
+    "Docs/report/final-verification.txt",
+    "Docs/report/native-compile-verification.txt",
+    "Docs/report/browser-verification.json",
+    "Docs/report/notation-browser-results.json",
+    "Docs/report/npm-audit.json"
+  ]
+}

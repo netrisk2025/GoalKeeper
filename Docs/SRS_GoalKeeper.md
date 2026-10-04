@@ -1,497 +1,722 @@
-# Software Requirements Specification — GoalKeeper Standalone Application
+# GoalKeeper standalone software requirements specification
+
+Version 1.1 | Baseline date: 2026-10-04 | Status: implementation baseline authorized by the current user request
+
+## 1. Purpose and authority
+
+GoalKeeper is a standalone assurance-case authoring and presentation application. Its primary audience includes security regime officials reviewing a clear, professionally organized argument. The GSN Community Standard Version 3 governs core notation and semantics. Restrained SSTPA Art Nouveau styling resolves presentation choices that the standard leaves unspecified.
+
+This baseline replaces SRS v0.2 in full. The current user request authorizes preparation of this SRS, preparation of verification procedures, then implementation. It explicitly supersedes the previous KerML-primary rendering direction and any document language requiring a second approval before implementation. SSTPA Tools and Attack Tree remain read-only sources. The authoritative requirement records are §4; explanations elsewhere do not create additional hidden obligations.
+
+## 2. Sources and terminology
+
+| Key | Source |
+|---|---|
+| U | User request of 2026-10-04: GSN v3 presentation, separate requested model pop-up, polished readable layout, standalone SRS/verification, SSTPA integration intent, FireSat Loss example, report/storyboard and GitHub push |
+| G | `Docs/GSN_STANDARD-VERSION 3.PDF`, GSN Community Standard Version 3, SCSC-141C, May 2021; local normative reference |
+| B | `/home/netrisk/Projects/SSTPA Tools/SSTPA Tool SRS V7.md`, current baseline read 2026-10-04; section references refer to that version |
+| L | Superseded GoalKeeper SRS v0.2 and Architecture v0.2, 2026-07-19; legacy IDs retained only for source traceability |
+| A | `/home/netrisk/Projects/Attack Tree/docs/Architecture.md`, prototype SRS, FireSat example and source material identified in the example provenance notes |
+| R | `/home/netrisk/Projects/Requirements/Skills.md`, INCOSE-aligned requirements drafting, quality, hierarchy and verification workflow |
+
+A **case** is a single-root standalone GSN argument; a **vault** is its user-selected Markdown storage directory. A **Solution** references evidence; a referenced note is not a statement that the evidence is sufficient. **Valid** means the implemented structural checks passed. **Undeveloped** means an explicitly unfinished Goal or Strategy. **Projection** means an alternate view of the same model. **Working layout** is the current in-memory arrangement; **Last Saved** is the explicitly persisted arrangement. CSS pixel thresholds apply at browser/display scale 100% and diagram zoom 100%. A requirement's primary parent is its numeric prefix; blank parent cells denote intentional roots.
+
+## 3. Profile and controlled presentation contract
+
+The scope is **GSN v3 core notation, Part 1 §2**, with the six elements and two relationship types. Goal and Strategy can carry an undeveloped diamond. SupportedBy allows G→G, G→S, G→Sn, S→G. InContextOf allows G/S→C/A/J. Shared support is valid; directed cycles are invalid. The single-root restriction is a GoalKeeper product boundary, not a claim that GSN forbids other argument-module arrangements.
+
+The profile excludes Part 1 §3 argument patterns/templates and abstraction markers, §4 modular/away elements and contracts, §5 Assurance Claim Points and §6 dialectic/defeat elements. Optional off-diagram continuation symbols (§1:2.2.20) are deferred. The full-case view/export retains the complete argument; explicitly labeled selected-branch previews and storyboard excerpts are partial views, without asserting that omitted branches are complete. This is not a declaration of implementation of every GSN v3 extension. The Six-Step Method in Part 2 §3 is authoring guidance, not a rule that every author must follow.
+
+| Symbol | Required visual interpretation |
+|---|---|
+| Goal | Rectangle; identifier and claim |
+| Strategy | Parallelogram; identifier and inference description |
+| Solution | Circle; identifier and evidence reference statement |
+| Context | Straight horizontal edges and rounded ends; identifier and contextual material |
+| Assumption / Justification | Oval plus A / J at top-right or bottom-right |
+| Undeveloped | Hollow diamond at bottom centre of Goal or Strategy |
+| SupportedBy | Line and filled arrowhead toward supporting target |
+| InContextOf | Line and hollow arrowhead toward contextual target |
+
+These symbols remain authoritative in the main canvas and exported GSN figures. The alternate model graph and text appear only in the menu-launched pop-up. Node geometry and arrow semantics do not change with the theme or user-selected colors. Color customization follows the Loss Tool four-channel selector; user-selected colors may reduce contrast, and the default-palette acceptance thresholds do not constrain those choices. Text and symbol dimensions may grow to accommodate content; the standard does not prescribe application fonts or pixel sizes. IDs and statements have priority over auxiliary metadata. The 14 px/contrast/80% width thresholds are project acceptance criteria derived from the user's legibility objective, not quotations from the GSN standard.
+
+## 4. Requirements
+
+### 1 — Core GSN profile
 
 | Field | Value |
-|-------|--------|
-| **Product** | GoalKeeper (standalone desktop) |
-| **Version** | 0.2 (requirements baseline after Boss review) |
-| **Date** | 2026-07-19 |
-| **Status** | Revised per Boss review — progressive canvas, layout save/restore, Art Nouveau light/dark UI |
-| **Imperatives** | Per `/home/netrisk/Projects/Resource.md` and `GoalKeeper/Resource.md` (SHALL / Should / Will / May) |
-| **Repository** | https://github.com/netrisk2025/GoalKeeper.git |
-| **Development home** | `/home/netrisk/Projects/GoalKeeper` |
-
----
-
-## 1. Purpose
-
-GoalKeeper is a **local desktop application** that enables a user to **graphically construct, edit, validate, persist, and export** an assurance argument using **Goal Structuring Notation (GSN)** for a user-selected goal.
-
-The product is an adaptation of the **SSTPA Tools Goal Keeper Add-on Tool** (`sstpa.goalkeeper`, SSTPA Tool SRS V7 §6.5.11) as a **standalone** application. SSTPA Tools supplies much of the upstream context (Asset, Loss, Validation, Verification) that the addon consumes. GoalKeeper replaces that upstream with:
-
-1. an optional **Goal Wizard** that guides (but does not force) goal and node formation; and
-2. a **markdown vault** on local disk as the sole persistence store (Obsidian-compatible linking).
-
----
-
-## 2. Scope
-
-### 2.1 In scope (v1)
-
-- Desktop application for Linux (primary), with Windows and macOS packaging paths defined for later builds.
-- User-selected vault directory; Root Goal selection or creation at startup.
-- Full core GSN element set: Goal, Strategy, Solution, Context, Assumption, Justification.
-- Core GSN relationships: SupportedBy, InContextOf (DAG, GSN rules).
-- Terminal Solutions with references to Evidence notes (and optional local/relative file paths).
-- Graphical structure **canvas** view with **progressive node display**, evidence view, validation view, and export view (modes aligned with SSTPA Goal Keeper).
-- **Layout Manager** that places new nodes; user drag-reposition; **Save Layout** and **Last Saved** restore controls.
-- Optional Goal Wizard (GSN Six-Step Method guidance; non-prescriptive; available anytime).
-- Persistence of all GSN semantic data as `.md` files; layout/presentation as sidecar JSON (last-saved layout).
-- Obsidian-compatible wikilinks for relationships so Obsidian can serve as an alternate viewer.
-- Structural validation (completeness, legality, cycles, uniqueness).
-- Export to Markdown report and JSON snapshot.
-- **Light and dark** themes with a **subtle Art Nouveau** visual identity; product logo, app icon, and banner-bar artwork.
-
-### 2.2 Out of scope (v1)
-
-- Neo4j or any graph database.
-- SSTPA Tools backend, SoI, HID grammar, Auth, or live interoperability API.
-- Modular GSN extensions (Away Goals/Solutions, Modules, Contracts, Module Interfaces) — reserved for a later version unless Boss promotes them.
-- Dialectic / defeat extensions of GSN v3 Part 1 extensions beyond core.
-- Multi-user concurrent editing, cloud sync, or network services.
-- Automatic generation of Root Goals from Asset–Loss pairs (SSTPA-only behavior).
-- Modification of the SSTPA Tools codebase.
-
-### 2.3 Normative references
-
-| Reference | Role |
-|-----------|------|
-| `Docs/GSN_STANDARD-VERSION 3.PDF` — GSN Community Standard Version 3 (SCSC-141C, May 2021) | Normative for GSN **semantics**, element definitions, permitted relationships, DAG rules, and Six-Step Method guidance for the Wizard |
-| SSTPA Tool SRS V7 §6.5.11 and Goal Keeper implementation | Informative adaptation source for product features, modes, validation, and **KerML-style visualization** |
-| KerML 1.0 (as used by SSTPA Tools GSN presentation) | Normative for **visual presentation** of GSN nodes (not GSN-3 geometric shapes) |
-
-### 2.4 Visualization rule (explicit exception)
-
-The application **SHALL** conform to GSN Community Standard Version 3 for structure and meaning.
-
-The application **SHALL NOT** use GSN-3 prescribed geometric symbols (goal rectangle, strategy parallelogram, solution circle, context “stadium”, assumption/justification ovals with A/J) as the primary diagram rendering.
-
-The application **SHALL** visualize GSN elements using **KerML-inspired feature-style nodes** (typed cards/nodes, type badges, mono identifiers) consistent with the SSTPA Tools Goal Keeper conceptual presentation, rendered on an interactive **canvas** within a **subtle Art Nouveau** chrome (see §7.2) — not classic GSN drawing shapes.
-
----
-
-## 3. Definitions
-
-See also `Resource.md`.
-
-| Term | Definition |
-|------|------------|
-| **Vault** | Directory chosen by the user that contains zero or more Root Goal subdirectories and may contain shared Evidence notes. |
-| **Root Goal directory** | Subdirectory named for a Root Goal (stable slug); contains all GSN element markdown files for that Goal Structure and a layout sidecar. |
-| **Element file** | One `.md` file representing one GSN element (or Evidence note), with YAML frontmatter and body. |
-| **Goal Structure** | The DAG of GSN elements reachable from one Root Goal via SupportedBy and InContextOf. |
-| **Undeveloped** | GSN decorator/state: a Goal or Strategy intentionally not yet developed (hollow diamond in GSN-3; represented as a boolean flag + visual incomplete marker in the canvas UI). |
-| **Complete structure** | A Goal Structure that passes completeness rules for Solutions (each Solution has ≥1 evidence reference) and has no ERROR-level validation findings. Completeness is advisory for editing; export may warn. |
-| **Canvas** | The interactive Structure-mode graph surface on which GSN nodes and edges are drawn and manipulated. |
-| **Layout Manager** | Application component that computes initial canvas positions for nodes that lack a saved position (new nodes, or nodes missing from the last-saved layout). |
-| **Working layout** | The current in-memory node positions on the canvas, including unsaved user drags and Layout Manager placements. |
-| **Last-saved layout** | The layout snapshot last written by **Save Layout** into the Root Goal directory (`_layout.json`); used when opening a Root Goal and when the user selects **Last Saved**. |
-| **Progressive display** | Nodes (and their connecting edges) appear on the canvas in a staged sequence rather than all at once, ordered from the Root Goal outward (or by tier), so the argument structure is revealed progressively. |
-
----
-
-## 4. Key decisions (for Boss review)
-
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| **D-1** | Markdown vault + Obsidian wikilinks replace Neo4j | Standalone weight; alternate viewer in Obsidian |
-| **D-2** | KerML-inspired node cards on canvas, not GSN-3 shapes; subtle **Art Nouveau** UI chrome | Match SSTPA Goal Keeper node semantics; Boss visual identity request |
-| **D-3** | Tech stack: Tauri 2 + React + TypeScript + Vite (see Architecture) | Reuse SSTPA frontend skills; native FS; no heavy backend |
-| **D-4** | Evidence is first-class vault notes (`gk_type: Evidence`), not SSTPA Validation/Verification/Loss | No SSTPA Core Data dependency |
-| **D-5** | Strategy → Solution SupportedBy is **allowed** (SSTPA Goal Keeper parity) | GSN core table lists strategy→goal primarily; SSTPA and practical use allow strategy→solution; documented as GoalKeeper relationship rule set RK-1 |
-| **D-6** | Modular GSN deferred | Keep v1 implementable |
-| **D-7** | Goal Wizard optional and non-prescriptive | User request; Six-Step Method is guidance only |
-| **D-8** | Semantic authority is markdown files; layout JSON is non-authoritative | Same split as SSTPA GoalStructure property vs graph |
-| **D-9** | Progressive canvas reveal of nodes; Layout Manager places new nodes; user drag anytime; **Save Layout** persists; **Last Saved** restores with Layout Manager for unsaved nodes | Boss review 2026-07-19 |
-| **D-10** | Light **and** dark themes required; Art Nouveau logo, icon, and banner assets in `Assets/` | Boss review 2026-07-19 |
-
----
-
-## 5. Product overview
-
-### 5.1 User goals
-
-1. Open or create a vault and a Root Goal.
-2. Build a clear assurance argument as a GSN DAG.
-3. Attach evidence to terminal Solutions.
-4. Validate structure and fix issues.
-5. Export a report or open the same files in Obsidian.
-6. Optionally use the Wizard when stuck or learning.
-
-### 5.2 Modes of operation
-
-Aligned with SSTPA Goal Keeper §6.5.11.5:
-
-| Mode | Purpose |
-|------|---------|
-| **Structure** | Display and edit the GSN DAG; create/link/edit nodes; layout |
-| **Evidence** | Focus on Solutions and their evidence references |
-| **Validation** | Structural findings (ERROR / WARNING / INFO) with jump-to-node |
-| **Export** | Report-oriented rendering; Markdown and JSON download/write |
-
-The Goal Wizard is a **panel or dialog** available from any mode; it does not replace free-form editing.
-
-### 5.3 Startup flow
-
-```
-Launch
-  → Select or create Vault directory
-  → List existing Root Goals (scan vault)
-  → User selects existing Root Goal  OR  creates New Root Goal
-  → If new: create Root Goal subdirectory + Root Goal markdown + default layout
-  → Open main window on that Goal Structure
-```
-
----
-
-## 6. Functional requirements
-
-### 6.1 Application shell and vault
-
-- **FR-1** The application SHALL run as a local desktop application without requiring a network connection for core editing and validation features.
-- **FR-2** At startup (and from a File/Vault menu), the application SHALL allow the user to select an existing vault directory or create a new vault directory.
-- **FR-3** The application SHALL persist the last-used vault path and recent Root Goals in local application settings (not inside the vault, unless the user opts in to a vault-level settings file).
-- **FR-4** When the vault is empty of Root Goals, the application SHALL offer to create a new Root Goal (Wizard optional).
-- **FR-5** The application SHALL present a list of Root Goals discovered by scanning the vault for Root Goal directories (see §8 data model).
-- **FR-6** Creating a new Root Goal SHALL create a dedicated subdirectory under the vault and write the initial Root Goal markdown file into that subdirectory.
-- **FR-7** The application SHALL brand the main window as **GoalKeeper** (not “Goal Keeper Tool”).
-
-### 6.2 Root Goal and Goal Structure
-
-- **FR-8** Each Goal Structure SHALL have exactly one Root Goal, which SHALL be a Goal element (`gk_type: GsnGoal`).
-- **FR-9** The Root Goal SHALL have no incoming SupportedBy relationship from another GSN element in the same structure.
-- **FR-10** Every non-root GSN element in the structure SHALL be reachable from the Root Goal via SupportedBy and/or InContextOf relationships.
-- **FR-11** SupportedBy relationships SHALL form a directed acyclic graph (DAG). The application SHALL reject or prevent cycles (FR-34).
-- **FR-12** The user SHALL be able to open only one Goal Structure as the active structure at a time in the main window (switching Root Goals reloads that structure). Multiple windows May be deferred.
-
-### 6.3 GSN element types
-
-- **FR-13** The application SHALL support the following GSN element types, mapped as:
-
-| GSN v3 element | Internal type | Typical GSN ID prefix |
-|----------------|---------------|------------------------|
-| Goal | `GsnGoal` | G |
-| Strategy | `GsnStrategy` | S |
-| Solution | `GsnSolution` | Sn |
-| Context | `GsnContext` | C |
-| Assumption | `GsnAssumption` | A |
-| Justification | `GsnJustification` | J |
-
-- **FR-14** Semantics SHALL match GSN v3 Part 1 core definitions: Goals are claims; Strategies describe inference between a goal and supporting goals; Solutions reference evidence; Context supplies context; Assumptions are intentionally unsubstantiated statements; Justifications state rationale.
-- **FR-15** Each element SHALL have: unique GSN ID within the Goal Structure, display Name, and type-specific statement text (GoalStatement, StrategyStatement, etc.).
-- **FR-16** Goals and Strategies MAY be marked **undeveloped** (GSN undeveloped decorator concept); the UI SHALL visually mark undeveloped elements as incomplete.
-
-### 6.4 GSN relationship rules (RK-1)
-
-- **FR-17** The application SHALL allow SupportedBy only for:
-
-| Source | Target |
-|--------|--------|
-| GsnGoal | GsnGoal |
-| GsnGoal | GsnStrategy |
-| GsnGoal | GsnSolution |
-| GsnStrategy | GsnGoal |
-| GsnStrategy | GsnSolution |
-
-- **FR-18** The application SHALL allow InContextOf only for:
-
-| Source | Target |
-|--------|--------|
-| GsnGoal | GsnContext, GsnAssumption, GsnJustification |
-| GsnStrategy | GsnContext, GsnAssumption, GsnJustification |
-
-- **FR-19** Context, Assumption, and Justification elements SHALL NOT have outgoing SupportedBy relationships that support Goals (they SHALL NOT act as SupportedBy sources).
-- **FR-20** A GsnSolution SHALL be terminal with respect to SupportedBy: it SHALL NOT have outgoing SupportedBy relationships.
-- **FR-21** A GsnStrategy Should have at least one outgoing SupportedBy to a GsnGoal or GsnSolution (WARNING if missing).
-- **FR-22** Duplicate logical relationships (same source, type, target) SHALL be prevented.
-- **FR-23** Relationships SHALL be represented in markdown using Obsidian wikilinks per §8.
-
-### 6.5 Evidence
-
-- **FR-24** The application SHALL support Evidence notes (`gk_type: Evidence`) that Solutions can reference.
-- **FR-25** A Solution SHALL reference zero or more Evidence notes; a Solution with zero references SHALL be marked incomplete (WARNING) and the structure SHALL NOT be considered complete (FR-16 completeness).
-- **FR-26** Evidence notes MAY include: name, description, evidence kind (Analysis | Test | Inspection | Demonstration | Document | Other), optional relative path or URI to an artifact, and free-form body text.
-- **FR-27** Evidence notes MAY live in a shared vault folder (e.g. `Evidence/`) or inside a Root Goal directory; links SHALL remain valid as relative wikilinks.
-- **FR-28** The Evidence view SHALL list each Solution with its evidence and highlight Solutions without evidence.
-
-### 6.6 Structure mode — create, edit, canvas, and layout
-
-- **FR-29** The user SHALL be able to create GSN elements of any supported type and link them with legal relationships from a selected source element.
-- **FR-30** The user SHALL be able to link existing elements and remove relationships, with a warning when removal orphans nodes from the Root Goal.
-- **FR-31** The user SHALL be able to edit Name and statement fields; identity fields (stable file id, GSN ID after assignment policy, type) SHALL be controlled (GSN ID editable only with uniqueness validation).
-- **FR-32** The user SHALL be able to delete an element with confirmation; deleting the Root Goal SHALL require a danger confirmation that the entire Goal Structure argument is removed.
-- **FR-33** The Structure view SHALL display the full DAG rooted at the selected Root Goal on an interactive **canvas**, allow selection, and support search over GSN ID, name, statement, type, and evidence link text.
-- **FR-34** The application SHALL prevent creation of relationships that would introduce a SupportedBy or InContextOf cycle, or SHALL reject them at save time with a clear error (prefer prevent-in-UI + validate-on-save).
-- **FR-37** The UI SHALL show path-to-root for the selected element (chain from Root Goal to selection).
-
-#### 6.6.1 Progressive canvas display
-
-- **FR-63** When a Root Goal is opened (or the Structure canvas is first populated for that structure), GSN nodes SHALL be **progressively displayed** on the canvas: they appear in a staged sequence rather than all appearing simultaneously.
-- **FR-64** Progressive display order SHALL start at the Root Goal and proceed outward along the support structure (tier-by-tier or breadth-first from the Root), so the argument is revealed from claim to support.
-- **FR-65** Edges SHALL appear when both endpoints are visible (or immediately with the later endpoint), so the graph does not show dangling links during the reveal.
-- **FR-66** Progressive display SHOULD complete within a short, configurable duration suitable for ≤ 200 nodes without blocking interaction once the reveal finishes; the user MAY skip/complete the reveal early (e.g. click canvas or press Escape) if provided.
-- **FR-67** When a **new** node is created during an editing session, it SHALL appear on the canvas with a brief progressive entrance (fade/scale or short delay) at the position assigned by the Layout Manager (FR-68), without replaying the full-structure reveal unless the user reopens the Root Goal.
-
-#### 6.6.2 Layout Manager, drag, Save Layout, Last Saved
-
-- **FR-68** The application SHALL include a **Layout Manager** that computes canvas positions for nodes that do not yet have a position in the working layout (including newly created nodes).
-- **FR-69** Placement by the Layout Manager SHOULD respect graph structure (e.g. parent above/near children for SupportedBy; context nodes offset laterally for InContextOf) and avoid unreasonable overlap where practical.
-- **FR-70** The user SHALL be able, at any time, to **select and drag** one or more nodes on the canvas to revise the working layout. Dragging SHALL update only presentation positions, not GSN semantics.
-- **FR-71** The Structure toolbar (or equivalent chrome) SHALL provide a **Save Layout** control. Activating **Save Layout** SHALL write the current working layout (node positions, and SHOULD include viewport/zoom and display toggles) to the Root Goal directory layout file (`_layout.json` or equivalent) as the **last-saved layout**.
-- **FR-72** Semantic markdown saves and **Save Layout** MAY be independent: saving node content SHALL NOT be required to save layout, and **Save Layout** SHALL NOT be required to persist markdown content. (Semantic Save remains per FR-55 and Architecture save model.)
-- **FR-73** When a GoalKeeper Root Goal is **opened**, the canvas SHALL display nodes according to the **last-saved layout** for that Root Goal, when a layout file exists.
-- **FR-74** On open, nodes present in the structure but **absent** from the last-saved layout SHALL be positioned by the Layout Manager; nodes present in the layout file but no longer in the structure SHALL be ignored (stale entries dropped). The application MAY notify the user if stale layout entries were ignored.
-- **FR-75** The Structure toolbar (or equivalent) SHALL provide a **Last Saved** control. Activating **Last Saved** SHALL:
-  1. restore the working layout for all nodes that have positions in the last-saved layout file; and  
-  2. arrange any nodes that exist in the current structure but are **not** in the last-saved layout using the Layout Manager; and  
-  3. drop working positions for nodes that no longer exist.  
-  **Last Saved** SHALL NOT rewrite the layout file until the user again chooses **Save Layout**.
-- **FR-76** After **Last Saved**, the canvas SHOULD apply a short progressive re-display of nodes whose positions changed or were newly placed (consistent with FR-63–FR-67 spirit), without requiring a full Root Goal reopen.
-- **FR-77** The layout file SHALL remain **non-authoritative** for semantic GSN relationships and node existence. Semantic relationships SHALL remain authoritative only in markdown (D-8).
-- **FR-78** Viewport pan/zoom SHALL be user-controllable; last-saved viewport MAY be restored on open when stored in the layout file.
-
-### 6.7 Validation mode
-
-- **FR-38** Validation SHALL report findings with severity ERROR, WARNING, or INFO.
-- **FR-39** ERROR findings SHALL include at least: missing Root Goal; second root Goal; cycle; illegal relationship type; Solution with outgoing SupportedBy; duplicate GSN IDs; unreachable nodes that are still claimed as part of the structure fileset inconsistency.
-- **FR-40** WARNING findings SHALL include at least: Goal/Strategy without support; Solution without evidence; Strategy without elaboration; undeveloped elements still open; empty statements.
-- **FR-41** INFO findings MAY include: GSN files in the Root Goal directory not reachable from the Root Goal (orphans on disk).
-- **FR-42** Findings SHALL be actionable (message text) and SHALL allow jump-to-node when a node is implicated.
-
-### 6.8 Export mode
-
-- **FR-43** The application SHALL export a Markdown report of the Goal Structure (hierarchy, statements, relationships, evidence, validation summary).
-- **FR-44** The application SHALL export a JSON snapshot sufficient to reconstruct semantic content and layout (schema versioned).
-- **FR-45** PNG/SVG diagram export Should be provided when a canvas/graph renderer is available; if deferred in an early milestone, Export mode SHALL state the limitation clearly (as SSTPA Goal Keeper currently does for DOM-tier view).
-
-### 6.9 Goal Wizard (optional, non-prescriptive)
-
-- **FR-46** The Goal Wizard SHALL be accessible at any time from the main window (e.g. toolbar or menu), and also from the New Root Goal flow.
-- **FR-47** The Wizard SHALL NOT block free-form editing; the user SHALL be able to dismiss it, skip steps, or apply only selected suggestions.
-- **FR-48** The Wizard SHOULD follow the GSN Six-Step Method (GSN v3 §2:3) as coaching prompts:
-
-  1. Identify the goal(s) to be supported  
-  2. Define the basis on which the goals are stated (Context / terms)  
-  3. Identify the strategy used to support the goals  
-  4. Define the basis on which the strategy is stated (Context / Justification / Assumption)  
-  5. Elaborate the strategy (new sub-goals → recurse) **or**  
-  6. Identify the basic solution (evidence)
-
-- **FR-49** Wizard steps MAY propose draft node names, statements, and links; applying a proposal SHALL create or update markdown only with explicit user confirmation (Apply / Skip).
-- **FR-50** The Wizard SHALL use plain language prompts suitable for users who are not GSN experts, while labeling GSN terms so experts recognize them.
-- **FR-51** The Wizard Shall not invent evidence; Solution/evidence steps SHALL prompt the user to attach or create Evidence notes.
-
-### 6.10 Obsidian interoperability
-
-- **FR-52** Relationship edges SHALL be expressible as Obsidian wikilinks so that opening the vault in Obsidian shows navigable links between notes.
-- **FR-53** Frontmatter SHALL use stable keys (see §8) so that a future Obsidian plugin or Dataview query can list types; the application SHALL NOT require Obsidian to be installed.
-- **FR-54** File names SHOULD be human-readable and stable (prefer GSN ID or slug); renames SHALL update reverse links or provide a repair action if links break.
-
-### 6.11 Persistence and integrity
-
-- **FR-55** All semantic GSN data for a Root Goal SHALL be stored under that Root Goal’s subdirectory as `.md` files (plus shared Evidence as allowed by FR-27).
-- **FR-56** Saves SHALL write files atomically (write temp + rename) to reduce corruption risk.
-- **FR-57** The application Should detect external vault changes (e.g. Obsidian edit) and offer reload when the active structure’s files change on disk.
-- **FR-58** The application SHALL NOT require a graph database.
-
----
-
-## 7. Non-functional requirements
-
-### 7.1 Platform and performance
-
-- **NFR-1** Core workflows SHALL function fully offline.
-- **NFR-2** Opening a Goal Structure of ≤ 200 nodes SHOULD complete in under 2 seconds on a typical developer laptop (SSD).
-- **NFR-3** The UI SHOULD remain responsive while saving; long operations (if any) SHALL show progress.
-- **NFR-4** Linux packaging is required for v1 verification; Windows and macOS targets SHOULD be buildable from the same codebase (Architecture).
-
-### 7.2 Usability and design language (Art Nouveau + light/dark)
-
-- **NFR-5** The application SHALL provide both a **light mode** and a **dark mode**, user-selectable and persisted in application settings.
-- **NFR-6** Visual design SHALL use a **subtle Art Nouveau** style: organic curved line accents, restrained botanical/filigree motifs, refined ornamental framing on chrome (banner, panels, empty states), without obscuring data density or readability on the canvas.
-- **NFR-7** Canvas node cards remain **KerML-inspired** (typed feature cards, mono GSN IDs, type badges) for argument legibility; Art Nouveau treatment applies primarily to **application chrome**, empty states, and light decorative accents—not to rewriting nodes as GSN-3 geometric symbols.
-- **NFR-8-UI** No emoji as functional UI icons; use SVG glyphs and the official product artwork in `Assets/`.
-- **NFR-9-UI** Color tokens SHALL exist for light and dark themes (surfaces, text, muted text, accent, status colors, hairline borders). Accent remains reserved for selection/focus/active state.
-- **NFR-10-UI** The application SHALL ship with product artwork:
-  - **Logo** — primary mark for about dialogs and documentation (`Assets/goalkeeper-logo.jpg` or successor SVG/PNG exports).
-  - **App icon** — desktop/window icon (`Assets/goalkeeper-icon.jpg` or successor multi-resolution icons).
-  - **Banner** — artwork used in the application **banner / title bar** region (`Assets/goalkeeper-banner.jpg` or successor).
-- **NFR-11-UI** Banner and logo treatment SHOULD remain legible in both light and dark modes (tone adjustment or theme-specific crop/overlay MAY be used).
-
-### 7.3 Security and privacy
-
-- **NFR-12** The application SHALL NOT transmit vault contents over the network as part of normal operation.
-- **NFR-13** Optional “check for updates” MAY use the network only with user consent (not required for v1).
-- **NFR-14** The application SHALL only access filesystem paths the user has selected (vault) plus application config directory.
-
-### 7.4 Quality
-
-- **NFR-15** Relationship legality, cycle detection, and GSN ID uniqueness SHALL be covered by automated unit tests.
-- **NFR-16** Markdown parse/serialize round-trip SHALL be covered by automated tests.
-- **NFR-17** Layout Manager placement, last-saved merge (saved positions + Layout Manager for new nodes), and layout file round-trip SHALL be covered by automated tests.
-- **NFR-18** Critical user flows (new Root Goal, add support chain, drag nodes, Save Layout, Last Saved, attach evidence, validate, export, theme switch) SHOULD have automated or scripted verification checklists.
-
----
-
-## 8. Data model (requirements level)
-
-### 8.1 Vault layout
-
-```
-<vault>/
-  .goalkeeper/                 # optional vault metadata
-    vault.json                 # vault id, schema version, display name
-  Evidence/                    # optional shared evidence notes
-    TR-42.md
-  <RootGoalSlug>/              # one Goal Structure
-    _root.md                   # OR the Root Goal file itself is G1.md with is_root: true
-    G1.md                      # Root Goal (recommended naming by GSN ID)
-    S1.md
-    G2.md
-    Sn1.md
-    C1.md
-    A1.md
-    J1.md
-    _layout.json               # last-saved layout (presentation only; FR-71–FR-77)
-```
-
-**FR-59** Each Root Goal directory SHALL contain exactly one element file with `is_root: true` (or equivalent documented marker).
-
-### 8.2 Element frontmatter (minimum)
-
-```yaml
----
-gk_schema: 1
-gk_type: GsnGoal            # GsnGoal | GsnStrategy | GsnSolution | GsnContext | GsnAssumption | GsnJustification | Evidence
-gsn_id: G1
-name: "System is acceptably safe"
-is_root: true               # only on Root Goal
-undeveloped: false
-statement: "..."            # may live only in body; if both, body wins after last save policy (see Architecture)
-supported_by:               # wikilinks to targets (SupportedBy)
-  - "[[S1]]"
-  - "[[Sn1]]"
-in_context_of:              # wikilinks (InContextOf)
-  - "[[C1]]"
-has_evidence:               # Solutions only
-  - "[[Evidence/TR-42]]"
-created: "2026-07-19T12:00:00Z"
-modified: "2026-07-19T12:05:00Z"
----
-# G1 — System is acceptably safe
-
-The system is acceptably safe to operate in the intended environment.
-
-## Supported By
-- [[S1]]
-- [[Sn1]]
-
-## In Context Of
-- [[C1]]
-```
-
-- **FR-60** The application SHALL treat frontmatter relationship lists as authoritative for edges when present; body `## Supported By` / `## In Context Of` sections SHALL be kept in sync on save for Obsidian readability.
-- **FR-61** Wikilink targets SHALL resolve to notes by file basename or vault-relative path without extension, consistent with Obsidian.
-
-### 8.3 Layout file (last-saved layout; non-authoritative for semantics)
-
-```json
-{
-  "schemaVersion": 1,
-  "rootGsnId": "G1",
-  "tool": "goalkeeper",
-  "savedAt": "2026-07-19T12:00:00Z",
-  "viewport": { "x": 0, "y": 0, "zoom": 1 },
-  "nodes": { "G1": { "x": 120, "y": 40 }, "S1": { "x": 120, "y": 160 } },
-  "display": { "showEvidenceBadges": true }
-}
-```
-
-- **FR-62** Layout file SHALL NOT be the source of truth for existence of nodes or relationships.
-- **FR-79** The layout file SHALL be updated only when the user activates **Save Layout** (FR-71), not automatically on every drag (working layout may differ from last-saved until Save Layout).
-- **FR-80** Semantic content Save (markdown) SHALL NOT overwrite `_layout.json` unless the product later offers a combined “Save all” that explicitly includes layout; Architecture defines the default as separate controls.
-
----
-
-## 9. Adaptation matrix (SSTPA Goal Keeper → GoalKeeper)
-
-| SSTPA Goal Keeper | Standalone GoalKeeper |
-|-------------------|------------------------|
-| Neo4j nodes/rels | Markdown files + wikilinks |
-| Asset–Loss–Root Goal selection | Vault Root Goal list + New Root Goal |
-| Auto Root Goal from Asset/Loss | Goal Wizard / user draft |
-| HAS_VALIDATION / HAS_VERIFICATION / HAS_LOSS | `has_evidence` → Evidence notes |
-| HID / uuid / SoI | GSN ID + file identity + Root Goal directory |
-| Staged Commit via Backend API | Save to disk (immediate or explicit Save; Architecture chooses explicit Save with dirty flag for v1) |
-| GoalStructure property / Commit Layout | **Save Layout** → `_layout.json` (last-saved); **Last Saved** reverts working layout |
-| Modes Structure/Evidence/Validation/Export | Same four modes + progressive canvas + Layout Manager |
-| KerML Model Text Panel | Optional later; not required for v1 |
-| Tool popup in SSTPA shell | Full application window with Art Nouveau banner, logo, light/dark |
-| Instrument-only chrome | Subtle Art Nouveau chrome + KerML-inspired canvas nodes |
-
----
-
-## 10. Constraints
-
-- **C-1** Development SHALL occur only under `/home/netrisk/Projects/GoalKeeper`.
-- **C-2** The SSTPA Tools tree SHALL NOT be modified for this product.
-- **C-3** No Neo4j dependency SHALL be introduced.
-- **C-4** GSN modular and dialectic extensions are out of scope for v1 (D-6).
-- **C-5** Imperative language in this SRS follows Projects `Resource.md`.
-
----
-
-## 11. Verification and validation
-
-| Requirement groups | Verification approach |
-|--------------------|------------------------|
-| FR-17–FR-23, FR-34, FR-38–FR-41 | Unit tests on graph rules / validator |
-| FR-55–FR-62, FR-79–FR-80, §8 | Round-trip fixtures (markdown + layout) |
-| FR-63–FR-78 | Progressive display, Layout Manager, drag, Save Layout, Last Saved (unit + scripted UI) |
-| FR-1–FR-12, FR-29–FR-37, FR-46–FR-51 | Integration / manual scripted demos on Linux |
-| FR-43–FR-45 | Golden-file export tests |
-| NFR-5–NFR-11-UI | Theme switch light/dark; banner/logo/icon present; Art Nouveau chrome review |
-| NFR-12–NFR-14 | Design review + static check (no network calls in core paths) |
-
-**Acceptance (v1):** A user can create a vault, create a Root Goal with or without the Wizard, see nodes appear progressively on the canvas, build a multi-level argument with Layout Manager placement and manual drag, **Save Layout**, reopen and see the last-saved layout, use **Last Saved** after further moves (new nodes still Layout-Managed), switch light/dark themes, pass validation with no ERRORs, export Markdown/JSON, and open the vault in Obsidian to navigate the same links.
-
----
-
-## 12. Traceability to GSN v3 (summary)
-
-| GSN v3 concept | GoalKeeper treatment |
-|----------------|----------------------|
-| Core elements (Goal, Strategy, Solution, Context, Assumption, Justification) | FR-13–FR-16 |
-| SupportedBy / InContextOf | FR-17–FR-23 |
-| DAG / no self-support | FR-11, FR-34 |
-| Element identifiers unique in module | GSN ID unique in Goal Structure (FR-15, FR-39) |
-| Undeveloped decorator | `undeveloped` flag + UI marker (FR-16) |
-| Six-Step Method (§2:3) | Goal Wizard (FR-46–FR-51) |
-| Geometric rendering Table 1:2-1 | **Not used** for primary UI; KerML-inspired cards + Art Nouveau chrome (D-2, D-10, §2.4, §7.2) |
-| Modular GSN §1:4 | Out of scope v1 |
-
----
-
-## 13. Open items (resolve at first sprint if needed)
-
-1. Progressive reveal timing defaults (ms per tier) — Architecture sets initial values; tune in UX pass.
-2. Whether multi-select drag is v1 or single-node drag only in first milestone (FR-70 allows “one or more”).
-3. Evidence defaults to vault-level `Evidence/` and/or per-Root Goal (Architecture allows both).
-4. App display name casing: **GoalKeeper** (this SRS) vs “Goal Keeper” in prose.
-
----
-
-## 14. Approval
-
-| Role | Name | Date | Decision |
-|------|------|------|----------|
-| Product owner (Boss) | | | Approve / Approve with notes / Rework |
-| Architecture companion | `Docs/ARCHITECTURE_GoalKeeper.md` | | Read with this SRS |
-
-Upon approval of this SRS (v0.2) and the Architecture document, implementation and verification MAY begin.
-
-### Revision history
-
-| Ver | Date | Notes |
-|-----|------|-------|
-| 0.1 | 2026-07-19 | Initial draft for Boss approval |
-| 0.2 | 2026-07-19 | Progressive canvas; Layout Manager; Save Layout / Last Saved; light+dark Art Nouveau UI; logo/icon/banner assets |
+|---|---|
+| ID | 1 |
+| Parent ID |  |
+| Statement | The application **SHALL** represent an assurance case using the core GSN profile defined in §3 of this SRS. |
+| Verification Method | Analysis |
+| Verification Statement | Review the evidence for requirements 1.1–1.8 and confirm that no excluded extension is advertised as implemented. |
+| Source | U; G Part 1 §2; B §6.5.11.1 |
+| Rationale | Provide a precise, bounded conformance claim. |
+
+### 1.1 — Six element types
+
+| Field | Value |
+|---|---|
+| ID | 1.1 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** support Goal, Strategy, Solution, Context, Assumption and Justification elements with the meanings defined in GSN v3 Table 1:2-1. |
+| Verification Method | Test |
+| Verification Statement | Create and round-trip one of each type; confirm that each retains its type, identifier and statement. |
+| Source | G §1:2.1.1–4; B §6.5.11.6 |
+| Rationale | Preserve the six core argument roles. |
+
+### 1.2 — Legal support matrix
+
+| Field | Value |
+|---|---|
+| ID | 1.2 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** permit SupportedBy creation only for Goal→Goal, Goal→Strategy, Goal→Solution and Strategy→Goal. |
+| Verification Method | Test |
+| Verification Statement | Exercise every ordered pair of the six core types; accept exactly the four listed pairs, including rejection of Strategy→Solution. |
+| Source | G Table 1:2-2, printed p18 |
+| Rationale | Remove the legacy nonstandard Strategy→Solution exception. |
+
+### 1.3 — Legal contextual matrix
+
+| Field | Value |
+|---|---|
+| ID | 1.3 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** permit InContextOf creation only from Goal or Strategy to Context, Assumption or Justification. |
+| Verification Method | Test |
+| Verification Statement | Exercise every ordered pair of the six core types; accept exactly the six listed pairs. |
+| Source | G Table 1:2-2 |
+| Rationale | Prevent contextual material being mistaken for supporting evidence. |
+
+### 1.4 — Acyclic mutations
+
+| Field | Value |
+|---|---|
+| ID | 1.4 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** reject a relationship creation that produces a directed cycle without changing the prior graph. |
+| Verification Method | Test |
+| Verification Statement | Attempt self-links and two- and three-node cycles; confirm rejection and deep equality of the prior graph. |
+| Source | G §1:2.2.2; B §6.5.11.7 |
+| Rationale | Exclude circular support and context. |
+
+### 1.5 — Duplicate relationships
+
+| Field | Value |
+|---|---|
+| ID | 1.5 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** reject a duplicate source, target and relationship-type triple without changing the prior graph. |
+| Verification Method | Test |
+| Verification Statement | Add the same legal edge twice; confirm the second action yields a diagnostic and one stored edge. |
+| Source | B §6.5.11.7/.14 |
+| Rationale | Keep the semantic graph unambiguous. |
+
+### 1.6 — Root and identifiers
+
+| Field | Value |
+|---|---|
+| ID | 1.6 |
+| Parent ID | 1 |
+| Statement | The validator **SHALL** report a diagnostic for each violation of one Goal root, no incoming support at that root, unique GSN identifiers and root reachability of non-root elements. |
+| Verification Method | Test |
+| Verification Statement | Validate fixtures with a missing root, a second root, a non-Goal root, an incoming root edge, duplicate GSN IDs and an unreachable node; confirm each violation is reported. |
+| Source | G §1:2.1.2; B §6.5.11.8/.14; L FR-8–11 |
+| Rationale | Apply the standalone case boundary without attributing the single-root product policy to the standard. |
+
+### 1.7 — Imported rule violations
+
+| Field | Value |
+|---|---|
+| ID | 1.7 |
+| Parent ID | 1 |
+| Statement | The validator **SHALL** identify imported illegal relationships and cycles with the affected identifiers. |
+| Verification Method | Test |
+| Verification Statement | Load a legacy Strategy→Solution fixture and cyclic fixture; confirm both remain inspectable and yield affected-node diagnostics rather than a silent conversion. |
+| Source | U; G Table 1:2-2; B §6.5.11.22 |
+| Rationale | Make migration defects visible. |
+
+### 1.8 — Undeveloped semantics
+
+| Field | Value |
+|---|---|
+| ID | 1.8 |
+| Parent ID | 1 |
+| Statement | The application **SHALL** restrict the undeveloped marker to Goal and Strategy elements. |
+| Verification Method | Test |
+| Verification Statement | Toggle the marker on each type and validate imported invalid flags; confirm only Goals and Strategies accept the marker and invalid imported flags are reported. |
+| Source | G Table 1:2-1, printed p18 |
+| Rationale | Represent explicitly unfinished argument branches. |
+
+### 2 — GSN presentation
+
+| Field | Value |
+|---|---|
+| ID | 2 |
+| Parent ID |  |
+| Statement | The primary diagram **SHALL** use the core GSN graphical notation defined in §3 of this SRS. |
+| Verification Method | Inspection |
+| Verification Statement | Compare a six-element fixture and an undeveloped element against the standard pages 17–18 in the primary diagram and SVG export. |
+| Source | U; G Tables 1:2-1/2 |
+| Rationale | Make customer-facing arguments recognizably GSN. |
+
+### 2.1 — Element geometry
+
+| Field | Value |
+|---|---|
+| ID | 2.1 |
+| Parent ID | 2 |
+| Statement | The renderer **SHALL** draw Goals as rectangles, Strategies as parallelograms, Solutions as circles, Contexts with straight horizontal sides and rounded ends, and Assumptions and Justifications as ovals. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect the six-shape fixture at 100% zoom; measure Solution width and height as equal within one CSS pixel and confirm each other outline matches Table 1:2-1. |
+| Source | G Table 1:2-1; U |
+| Rationale | Protect the notation from theme-driven shape changes. |
+
+### 2.2 — Notation decorators
+
+| Field | Value |
+|---|---|
+| ID | 2.2 |
+| Parent ID | 2 |
+| Statement | The renderer **SHALL** place A or J at the top-right or bottom-right of its corresponding oval and a hollow diamond at the bottom centre of undeveloped Goals and Strategies. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect A, J, undeveloped Goal and undeveloped Strategy fixtures in both themes and exported SVG; confirm markers are visible outside statement text. |
+| Source | G Table 1:2-1 |
+| Rationale | Retain semantics that oval shape alone cannot convey. |
+
+### 2.3 — Relationship arrows
+
+| Field | Value |
+|---|---|
+| ID | 2.3 |
+| Parent ID | 2 |
+| Statement | The renderer **SHALL** draw SupportedBy with a filled arrowhead and InContextOf with a hollow arrowhead pointing toward the target element. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect both relationship types in both themes and SVG; verify head fill and direction against the source/target fixture IDs. |
+| Source | G Table 1:2-2 |
+| Rationale | Distinguish evidence support from context without relying on color. |
+
+### 2.4 — Complete readable statements
+
+| Field | Value |
+|---|---|
+| ID | 2.4 |
+| Parent ID | 2 |
+| Statement | At 100% diagram zoom, the renderer **SHALL** display the full identifier and statement of each element using statement text of at least 14 CSS pixels without ellipsis or clipping. |
+| Verification Method | Test |
+| Verification Statement | Render the long-text fixture defined in VP-02 at 100% zoom; inspect text extents against symbol boundaries and compare visible text with the model. |
+| Source | U; G §1:2.1.2, §1:2.3; B §6.5.11.25 |
+| Rationale | Make professional review possible without hidden claims. |
+
+### 2.5 — Contrast
+
+| Field | Value |
+|---|---|
+| ID | 2.5 |
+| Parent ID | 2 |
+| Statement | The default presentation palettes **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes. |
+| Verification Method | Analysis |
+| Verification Statement | Calculate relative-luminance contrast from the shipped tokens for both themes and record each ratio; exclude ornamental accents that carry no information. |
+| Source | U; B §6.4.1; project-derived measurable threshold |
+| Rationale | Keep the argument legible for reviewers. |
+
+### 2.6 — Restrained theme
+
+| Field | Value |
+|---|---|
+| ID | 2.6 |
+| Parent ID | 2 |
+| Statement | The presentation **SHALL** confine Art Nouveau ornament to the application chrome outside the GSN symbols and relationship paths. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect a full-canvas screenshot in each theme; confirm symbols and paths have no botanical, filigree or banner imagery. |
+| Source | U; B §6.3.1/§6.4.1; L NFR-6 |
+| Rationale | Resolve stylistic ambiguity without altering GSN notation. |
+
+### 2.7 — Diagram workspace
+
+| Field | Value |
+|---|---|
+| ID | 2.7 |
+| Parent ID | 2 |
+| Statement | At a 1440×900 viewport with auxiliary panels closed, the Structure workspace **SHALL** allocate at least 80 percent of its usable content width to the GSN canvas. |
+| Verification Method | Test |
+| Verification Statement | Measure canvas width divided by workspace width at the specified viewport; confirm at least 0.80 and that the graph remains usable after reopening panels. |
+| Source | U |
+| Rationale | Return screen area to the customer-facing case. |
+
+### 2.8 — Theme selection
+
+| Field | Value |
+|---|---|
+| ID | 2.8 |
+| Parent ID | 2 |
+| Statement | The application **SHALL** restore the last selected light or dark theme on restart. |
+| Verification Method | Test |
+| Verification Statement | Select each theme, restart the application and confirm its persisted appearance. |
+| Source | L NFR-5; B §6.4.1 |
+| Rationale | Preserve the existing standalone theme workflow. |
+
+### 2.9 — Node-type color selection
+
+| Field | Value |
+|---|---|
+| ID | 2.9 |
+| Parent ID | 2 |
+| Statement | The application **SHALL** provide a node-type color selector with font, fill, connector and boundary channels for each of the six core GSN types and a reset-to-defaults action. |
+| Verification Method | Test |
+| Verification Statement | Select each core type, change each of its four channels and reset all colors; confirm other types remain unchanged until reset, which restores theme defaults. |
+| Source | U: authorized SSTPA integration and reuse of the Loss Tool color selector, 2026-10-04 |
+| Rationale | Match the existing Loss Tool customization workflow while preserving GSN geometry. |
+
+### 2.10 — Color presentation parity
+
+| Field | Value |
+|---|---|
+| ID | 2.10 |
+| Parent ID | 2 |
+| Statement | The renderer **SHALL** apply the current node-type colors to the primary diagram, model pop-up and exported SVG, with outgoing connectors using their source type’s connector color. |
+| Verification Method | Test |
+| Verification Statement | Set distinct colors on a fixture containing all six types and both legal edge types; compare SVG attributes in the primary graph, projection and export, including filled support heads, hollow context heads and unchanged semantic serialization. |
+| Source | U: authorized color selector; G Tables 1:2-1/2 |
+| Rationale | Keep alternate views and deliverables consistent without changing notation semantics. |
+
+### 3 — Alternate model view
+
+| Field | Value |
+|---|---|
+| ID | 3 |
+| Parent ID |  |
+| Statement | The application **SHALL** expose the alternate model view through a View-menu command that opens a separate dismissible pop-up. |
+| Verification Method | Demonstration |
+| Verification Statement | Open the View menu, launch the model view and close it with the close control and Escape; confirm it is absent from the main workspace before launch and after dismissal. |
+| Source | U; supersedes B §6.4.2/§6.5.11.26 |
+| Rationale | Keep technical projections available on demand. |
+
+### 3.1 — Projection parity
+
+| Field | Value |
+|---|---|
+| ID | 3.1 |
+| Parent ID | 3 |
+| Statement | The alternate model view **SHALL** derive its graph and model text from the currently open argument without modifying its semantics. |
+| Verification Method | Test |
+| Verification Statement | Compare node IDs, types and relationship triples in the primary graph, projection graph and model text; open and close the view and confirm unchanged semantic serialization. |
+| Source | U; B §3.7.6/§6.5.11.26 adapted |
+| Rationale | Maintain one argument across presentations. |
+
+### 3.2 — Projection boundary
+
+| Field | Value |
+|---|---|
+| ID | 3.2 |
+| Parent ID | 3 |
+| Statement | The alternate model view **SHALL** identify its output as an illustrative SysML/KerML-style projection unless the output has been verified by a conforming language parser. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect the projection label and export description; confirm there is no unsupported claim of conforming SysML/KerML interchange. |
+| Source | U; B §3.7.6 adapted |
+| Rationale | Avoid conflating familiar presentation with certified language translation. |
+
+### 3.3 — Pop-up accessibility
+
+| Field | Value |
+|---|---|
+| ID | 3.3 |
+| Parent ID | 3 |
+| Statement | The alternate model pop-up **SHALL** support keyboard focus entry, contained tab navigation, Escape dismissal and focus return to its invoking control. |
+| Verification Method | Test |
+| Verification Statement | Launch using the keyboard, traverse controls forward and backward, press Escape and confirm the invoking control receives focus. |
+| Source | U; B §6.4.1 adapted |
+| Rationale | Make the requested pop-up usable without a pointing device. |
+
+### 4 — Layout and navigation
+
+| Field | Value |
+|---|---|
+| ID | 4 |
+| Parent ID |  |
+| Statement | The application **SHALL** provide an explicit Arrange command for a hierarchical top-down GSN layout using the ELK layered engine family used by the Loss Tool prototype. |
+| Verification Method | Test |
+| Verification Statement | Arrange a branched case with shared support; confirm parents are above supporting descendants, context is distinguishable from support, and geometry boxes do not overlap. |
+| Source | U; A docs/Architecture.md; B §6.5.11.16 adapted |
+| Rationale | Reuse the proven Loss prototype layout approach. |
+
+### 4.1 — Stable manual positions
+
+| Field | Value |
+|---|---|
+| ID | 4.1 |
+| Parent ID | 4 |
+| Statement | The application **SHALL** preserve existing working node positions during selection, statement editing, validation and evidence association until an explicit layout action is requested. |
+| Verification Method | Test |
+| Verification Statement | Drag a node, perform each listed operation and compare coordinates; confirm equality before explicit Arrange or Last Saved. |
+| Source | B §6.5.11.16; L FR-67–78 |
+| Rationale | Prevent distracting layout movement. |
+
+### 4.2 — Saved layout
+
+| Field | Value |
+|---|---|
+| ID | 4.2 |
+| Parent ID | 4 |
+| Statement | The application **SHALL** restore positions and viewport saved by Save Layout when the same argument is reopened. |
+| Verification Method | Test |
+| Verification Statement | Drag nodes, change zoom and pan, save layout, reopen and compare the saved positions and viewport. |
+| Source | B §6.5.11.9; L FR-71–80 |
+| Rationale | Make reviewed figures reproducible. |
+
+### 4.3 — Layout merge
+
+| Field | Value |
+|---|---|
+| ID | 4.3 |
+| Parent ID | 4 |
+| Statement | The application **SHALL** reconcile Last Saved layout with the current graph by restoring saved extant positions, placing new nodes and ignoring deleted-node positions. |
+| Verification Method | Test |
+| Verification Statement | Save a layout, add a node and delete another, invoke Last Saved and confirm restored extant coordinates, finite new coordinates and no deleted visual node. |
+| Source | L FR-73–77; B §6.5.11.22 |
+| Rationale | Keep presentation metadata subordinate to semantic content. |
+
+### 4.4 — Layout authority
+
+| Field | Value |
+|---|---|
+| ID | 4.4 |
+| Parent ID | 4 |
+| Statement | The application **SHALL** write layout metadata only through the explicit Save Layout action. |
+| Verification Method | Test |
+| Verification Statement | Compare layout storage before and after node drag and semantic Save; confirm only Save Layout changes the stored layout. |
+| Source | L FR-79–80 |
+| Rationale | Preserve the established distinction between semantic and visual saves. |
+
+### 4.5 — Diagram navigation
+
+| Field | Value |
+|---|---|
+| ID | 4.5 |
+| Parent ID | 4 |
+| Statement | The Structure workspace **SHALL** provide pan, zoom, fit-to-argument, node selection and manual node dragging. |
+| Verification Method | Demonstration |
+| Verification Statement | Exercise each listed operation on the FireSat case and confirm that selection exposes the correct element for inspection. |
+| Source | B §6.5.11.15; L FR-29–37 adapted |
+| Rationale | Support authoring and review at different scales. |
+
+### 4.6 — Explicit color persistence
+
+| Field | Value |
+|---|---|
+| ID | 4.6 |
+| Parent ID | 4 |
+| Statement | The layout sidecar **SHALL** persist node-type color overrides through Save Layout and restore them through reopening and Last Saved, accepting only complete four-channel hexadecimal RGB styles for known GSN types. |
+| Verification Method | Test |
+| Verification Statement | Change colors, save semantic content and verify no sidecar write; Save Layout, change colors again, invoke Last Saved and reopen to verify restoration; load unknown types, missing channels, CSS payloads and malformed colors and confirm they are discarded. |
+| Source | U: authorized color selector; SRS 4.2–4.4 |
+| Rationale | Keep presentation changes nonsemantic and prevent unsafe imported style values. |
+
+### 5 — Standalone authoring and persistence
+
+| Field | Value |
+|---|---|
+| ID | 5 |
+| Parent ID |  |
+| Statement | The application **SHALL** support local assurance-case authoring without an SSTPA Tools backend or graph database. |
+| Verification Method | Demonstration |
+| Verification Statement | Disconnect network access, open a local vault, edit an argument, validate it, save it and reopen it. |
+| Source | U; L FR-1/FR-58, NFR-1 |
+| Rationale | Keep the prototype independently operable. |
+
+### 5.1 — Vault workflow
+
+| Field | Value |
+|---|---|
+| ID | 5.1 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** support choosing a local vault and creating or opening a Goal root in that vault. |
+| Verification Method | Demonstration |
+| Verification Statement | Create a vault and root, close it, choose it again and confirm the new root is available. |
+| Source | L FR-2–6; B §6.5.11.3 adapted |
+| Rationale | Replace SoI and Asset-Loss invocation with local case selection. |
+
+### 5.2 — Element editing
+
+| Field | Value |
+|---|---|
+| ID | 5.2 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** support creation, statement editing and deletion of the six core GSN element types. |
+| Verification Method | Test |
+| Verification Statement | Create each type, edit its statement and remove a non-root sample; confirm the resulting persisted model matches the operations. |
+| Source | B §6.5.11.10; L FR-24–28 |
+| Rationale | Retain an authoring application rather than a static renderer. |
+
+### 5.3 — Semantic markdown
+
+| Field | Value |
+|---|---|
+| ID | 5.3 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** persist semantic elements and relationships in Markdown notes with stable frontmatter and Obsidian-compatible wikilinks. |
+| Verification Method | Test |
+| Verification Statement | Round-trip fixtures containing every element and both relationship types; compare semantic values and inspect the generated wikilinks. |
+| Source | L FR-52–61; B §6.5.11.9 adapted |
+| Rationale | Enable local portability and alternate note tools. |
+
+### 5.4 — Semantic layout separation
+
+| Field | Value |
+|---|---|
+| ID | 5.4 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** preserve semantic nodes and relationships when layout metadata is absent or stale. |
+| Verification Method | Test |
+| Verification Statement | Remove the layout file and introduce a stale node position in separate fixtures; confirm the same semantic serialization and a usable layout in both. |
+| Source | L FR-62; B §6.5.11.9/.22 |
+| Rationale | Prevent visualization metadata from becoming the argument authority. |
+
+### 5.5 — Actionable validation
+
+| Field | Value |
+|---|---|
+| ID | 5.5 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** present validation findings with severity, affected identifier and a rule-specific explanation. |
+| Verification Method | Test |
+| Verification Statement | Validate invalid, incomplete and valid fixtures and inspect their finding records and visible summaries. |
+| Source | B §6.5.11.14/.22 |
+| Rationale | Enable correction without reverse-engineering the validator. |
+
+### 5.6 — Save errors
+
+| Field | Value |
+|---|---|
+| ID | 5.6 |
+| Parent ID | 5 |
+| Statement | If a vault read or write fails, the application **SHALL** display the failure without reporting successful persistence. |
+| Verification Method | Test |
+| Verification Statement | Use a failed filesystem operation fixture or read-only destination and confirm a visible failure with no success state. |
+| Source | B §6.5.11.22; L FR-56 adapted |
+| Rationale | Avoid mistaken assurance that edits reached disk. |
+
+### 5.7 — Data privacy
+
+| Field | Value |
+|---|---|
+| ID | 5.7 |
+| Parent ID | 5 |
+| Statement | The application **SHALL** perform the standalone core workflows without transmitting vault contents to a network service. |
+| Verification Method | Analysis |
+| Verification Statement | Inspect runtime network behavior and source imports for open, edit, validate, arrange, save and export; confirm no vault payload leaves the local process. |
+| Source | L NFR-12 |
+| Rationale | Preserve the offline privacy property. |
+
+### 5.8 — Atomic file replacement
+
+| Field | Value |
+|---|---|
+| ID | 5.8 |
+| Parent ID | 5 |
+| Statement | When saving an existing vault file, the native filesystem adapter **SHALL** replace that file through a completed temporary-file write and rename operation. |
+| Verification Method | Test |
+| Verification Statement | Inject a temporary-write failure and confirm the original file content remains intact; exercise a successful replacement and confirm the complete new content. Record native runtime qualification separately from mocked adapter tests. |
+| Source | L FR-56; B §6.5.11.22 adapted |
+| Rationale | Reduce corruption risk without claiming a multi-file transaction. |
+
+### 5.9 — Vault-relative paths
+
+| Field | Value |
+|---|---|
+| ID | 5.9 |
+| Parent ID | 5 |
+| Statement | The vault adapter **SHALL** reject absolute paths and parent-directory traversal segments before executing a vault file read or write. |
+| Verification Method | Test |
+| Verification Statement | Attempt absolute POSIX/Windows paths and forward/backslash parent traversal paths; confirm rejection before any filesystem call and acceptance of a normal vault-relative note path. |
+| Source | L NFR-14; project-derived input boundary |
+| Rationale | Keep vault operations within their user-selected path boundary. |
+
+### 5.10 — Wizard evidence control
+
+| Field | Value |
+|---|---|
+| ID | 5.10 |
+| Parent ID | 5 |
+| Statement | The Goal Wizard **SHALL** require an explicit author action before applying a proposed argument change or attaching evidence. |
+| Verification Method | Test |
+| Verification Statement | Open and dismiss each coaching step without Apply; confirm the graph is unchanged, then apply a proposal and confirm only the displayed change appears. |
+| Source | L FR-46–51; G Part 2 §3 |
+| Rationale | Retain optional guided authoring without inventing evidence or forced edits. |
+
+### 6 — Evidence and review exports
+
+| Field | Value |
+|---|---|
+| ID | 6 |
+| Parent ID |  |
+| Statement | The application **SHALL** distinguish structural argument validity from evidence sufficiency and approval by a security regime official. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect validation and example/report language; confirm passing syntax is not labeled certification, accepted risk or completed independent verification. |
+| Source | U; G §0:4 and §1:2.3; B §6.5.11.23 adapted |
+| Rationale | A persuasive case still requires evidence and accountable review. |
+
+### 6.1 — Evidence association
+
+| Field | Value |
+|---|---|
+| ID | 6.1 |
+| Parent ID | 6 |
+| Statement | The application **SHALL** support one or more evidence-note references on a Solution without drawing an evidence node inside the Solution circle. |
+| Verification Method | Test |
+| Verification Statement | Attach two evidence notes to a Solution, save and reopen; confirm both references and inspect the circle and evidence details. |
+| Source | G §1:2.3.4; B §6.5.11.12/.25 |
+| Rationale | Represent Solutions as evidence references, preserving the GSN symbol. |
+
+### 6.2 — Incomplete evidence
+
+| Field | Value |
+|---|---|
+| ID | 6.2 |
+| Parent ID | 6 |
+| Statement | The validator **SHALL** report a Solution with no resolvable evidence-note reference as incomplete. |
+| Verification Method | Test |
+| Verification Statement | Validate empty-reference and missing-target Solution fixtures; confirm incomplete diagnostics and compare with a resolvable-reference fixture. |
+| Source | B §6.5.11.8/.12/.22; L FR-38–41 |
+| Rationale | Make absent evidence visible. |
+
+### 6.3 — Unfinished support
+
+| Field | Value |
+|---|---|
+| ID | 6.3 |
+| Parent ID | 6 |
+| Statement | The validator **SHALL** identify Goals and Strategies without supporting children while preserving explicitly undeveloped status. |
+| Verification Method | Test |
+| Verification Statement | Compare supported, unsupported and explicitly undeveloped Goal/Strategy fixtures; confirm findings distinguish unfinished branches without silently marking them complete. |
+| Source | G Table 1:2-1; B §6.5.11.23 |
+| Rationale | Expose the remaining work in a draft case. |
+
+### 6.4 — SVG figure export
+
+| Field | Value |
+|---|---|
+| ID | 6.4 |
+| Parent ID | 6 |
+| Statement | The application **SHALL** export a full-argument SVG containing the current GSN shapes, complete statement text and relationship styles. |
+| Verification Method | Test |
+| Verification Statement | Export the six-element and FireSat fixtures, reopen the SVG and compare visible IDs, text, shape types and edge directions with the source graph. |
+| Source | U; B §6.5.11.19/.23 |
+| Rationale | Supply scalable figures for customer and certification reports. |
+
+### 6.5 — Structured exports
+
+| Field | Value |
+|---|---|
+| ID | 6.5 |
+| Parent ID | 6 |
+| Statement | The application **SHALL** export Markdown and JSON representations containing the argument identifiers, statements, typed relationships and evidence references. |
+| Verification Method | Test |
+| Verification Statement | Export a known fixture and compare its nodes, statements, relationship triples and evidence links with the model. |
+| Source | B §6.5.11.19; L FR-43–45 |
+| Rationale | Keep the argument reviewable and transferable. |
+
+### 6.6 — FireSat example
+
+| Field | Value |
+|---|---|
+| ID | 6.6 |
+| Parent ID | 6 |
+| Statement | The repository **SHALL** include an openable FireSat GSN case whose Loss claims and source references derive from the prototype Loss Tool example. |
+| Verification Method | Analysis |
+| Verification Statement | Compare the shipped case and its source notes against the referenced Loss Tool fixture; confirm retained Loss identity, claim derivation and source file provenance. |
+| Source | U; A FireSat example |
+| Rationale | Demonstrate the required workflow with traceable source material. |
+
+### 6.7 — Illustrative evidence limits
+
+| Field | Value |
+|---|---|
+| ID | 6.7 |
+| Parent ID | 6 |
+| Statement | The FireSat example **SHALL** identify prototype calculations as illustrative and expose missing independent verification or acceptance evidence. |
+| Verification Method | Inspection |
+| Verification Statement | Read the example contexts, assumptions, evidence notes and report; confirm no illustrative metric or placeholder document is presented as an operational FireSat measurement or approval. |
+| Source | U; A docs/Architecture.md metric semantics |
+| Rationale | Avoid fabricating the substance of the assurance case. |
+
+### 6.8 — Development storyboard
+
+| Field | Value |
+|---|---|
+| ID | 6.8 |
+| Parent ID | 6 |
+| Statement | The development report **SHALL** show the progression from prototype Loss source through top claim, context, strategy, supporting claims, evidence and final reviewer view. |
+| Verification Method | Inspection |
+| Verification Statement | Review each storyboard scene and its source/claim/evidence explanation; confirm the final scene identifies unresolved evidence or decision gaps. |
+| Source | U; G Part 2 §3 |
+| Rationale | Explain how the case was constructed, not only its final appearance. |
+
+### 7 — SSTPA integration boundary
+
+| Field | Value |
+|---|---|
+| ID | 7 |
+| Parent ID |  |
+| Statement | The architecture **SHALL** separate the semantic case model and validation rules from diagram rendering and storage adapters. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect module imports and the architecture document; confirm core model/rule modules have no React, Tauri or SSTPA backend dependency. |
+| Source | U; A docs/Architecture.md; L Architecture §4 |
+| Rationale | Permit a future SSTPA host adapter without rewriting GSN semantics. |
+
+### 7.1 — Integration mapping
+
+| Field | Value |
+|---|---|
+| ID | 7.1 |
+| Parent ID | 7 |
+| Statement | The repository **SHALL** document mappings from standalone GSN types, relationship types, evidence notes and layout metadata to SSTPA Goal Keeper data. |
+| Verification Method | Inspection |
+| Verification Statement | Review the integration mapping and confirm each standalone type and relationship has an explicit SSTPA destination or deferred decision. |
+| Source | U; B §6.5.11.6–9/.12/.21 |
+| Rationale | Make eventual integration concrete without pretending that a live adapter exists. |
+
+### 7.2 — Read-only source isolation
+
+| Field | Value |
+|---|---|
+| ID | 7.2 |
+| Parent ID | 7 |
+| Statement | The delivered changes **SHALL** remain within the GoalKeeper repository while treating SSTPA Tools and the Loss Tool prototype as reference sources. |
+| Verification Method | Inspection |
+| Verification Statement | Inspect changed-file lists and source-tree status recorded for the task; confirm no source-project edit belongs to this change. |
+| Source | U; L C-1/C-2; project Agent.md |
+| Rationale | Protect the flagship and source prototype during independent development. |
+
+### 7.3 — Verification record
+
+| Field | Value |
+|---|---|
+| ID | 7.3 |
+| Parent ID | 7 |
+| Statement | The development report **SHALL** record observed results for each SRS requirement and identify any unexecuted procedure, failed test or platform limitation. |
+| Verification Method | Inspection |
+| Verification Statement | Cross-check the report against the SRS IDs, commands, logs and screenshots; confirm that no unexecuted procedure is reported as passed. |
+| Source | U; B §6.5.11.24; L NFR-15–18 |
+| Rationale | Make the push and completion claim reviewable. |
+
+## 5. Acceptance and deferrals
+
+The verification procedures in `VERIFICATION_GoalKeeper.md` precede implementation. A passing automated suite alone does not establish visual, native-desktop or source-provenance acceptance. The development report records each requirement as PASS, FAIL, PARTIAL or NOT RUN with evidence. GitHub push follows the applicable automated gates; any broader verification gaps remain explicit in the report.
+
+Full SysML/KerML grammar interchange, a live SSTPA backend adapter, automatic production Asset-Loss root creation, authentication/SoI/HID administration, graph-database transactions, argument extensions, native Windows/macOS qualification, branch folding with off-diagram notation, PNG image export, arbitrary freeform model-text editing, full-text search, undo history and filesystem watch/rename repair are deferred. These are not silently represented as completed capabilities. Existing compatible authoring workflows, including the optional wizard, remain available where implemented; they are not grounds to restore conflicting GSN presentation rules.
+
+Per-file failure reporting is required; this baseline does not claim multi-file ACID transactions from a Markdown vault. The future SSTPA adapter retains its own authorization and transactional validation responsibilities. Timing claims from the previous SRS's unspecified “typical developer laptop” are replaced by recorded fixture size, machine and observed timing in verification evidence.
+
+## 6. Traceability and quality record
+
+`REQUIREMENT_DISPOSITION.md` records imported, adapted, rejected and deferred source obligations, including explicit contradictions. `REQUIREMENTS_QUALITY.md` records the draft, individual quality, verification-method, hierarchy and set checks performed under R. `requirements.json` is the machine-readable mirror of §4. This baseline contains no MUST statement: its privacy requirement is already an atomic, verifiable control rather than a vague security-control generator.
+
+## 7. Revision history
+
+| Version | Date | Change |
+|---|---|---|
+| 0.2 | 2026-07-19 | Prior standalone KerML-primary baseline; now superseded |
+| 1.0 | 2026-10-04 | GSN core shapes and legal edges, menu model projection, customer presentation, ELK layout, provenance, verification and integration boundary |

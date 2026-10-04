@@ -1,12 +1,12 @@
 {
   "name": "goalkeeper",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Standalone GSN assurance-case desktop application",
   "scripts": {
     "dev": "bash scripts/with-raised-nofile.sh vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run licenses && tsc --noEmit && vite build && node scripts/verify-licenses.mjs --dist",
     "preview": "bash scripts/with-raised-nofile.sh vite preview",
     "typecheck": "tsc --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false",
     "test": "vitest run",
@@ -14,20 +14,21 @@
     "lint": "tsc --noEmit --pretty false",
     "tauri": "tauri",
     "tauri:dev": "bash scripts/with-raised-nofile.sh tauri dev",
-    "tauri:build": "bash scripts/with-raised-nofile.sh tauri build"
+    "tauri:build": "bash scripts/with-raised-nofile.sh tauri build",
+    "licenses": "node scripts/verify-licenses.mjs",
+    "verify": "npm test && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-fs": "^2.2.1",
-    "cytoscape": "^3.31.2",
+    "elkjs": "0.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
-    "@types/cytoscape": "^3.21.9",
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
@@ -35,6 +36,6 @@
     "jsdom": "^26.0.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
-    "vitest": "^3.0.2"
+    "vitest": "5.0.3"
   }
 }

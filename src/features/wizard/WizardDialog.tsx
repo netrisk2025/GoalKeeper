@@ -56,7 +56,7 @@ const STEPS: {
   },
   {
     title: "Step 6 — Solution / evidence",
-    body: "Close a leaf claim with a Solution that references evidence.",
+    body: "Add an evidence-reference Solution to a Goal. Then attach existing evidence notes in the element details; creating a Solution alone does not close the evidence gap.",
     titleLabel: "Solution title",
     statementLabel: "Solution / evidence statement",
     action: { kind: "add", type: "GsnSolution", rel: "SUPPORTED_BY", parent: "selection" },
@@ -200,13 +200,17 @@ export function WizardDialog() {
       }
       return focusId ?? st.rootId;
     }
-    // selection: prefer selected goal/strategy under this recursion
+    // A Solution supports a Goal, never a Strategy (GSN v3 Table 1:2-2).
     const sel = useAppStore.getState().selectedId;
     if (sel) {
       const el = st.elements.get(sel);
-      if (el && (el.gkType === "GsnGoal" || el.gkType === "GsnStrategy")) return sel;
+      if (el?.gkType === "GsnGoal") return sel;
+      if (el?.gkType === "GsnSolution") {
+        for (const parent of st.elements.values()) {
+          if (parent.gkType === "GsnGoal" && parent.supportedBy.includes(sel)) return parent.gsnId;
+        }
+      }
     }
-    if (lastStrategyId && st.elements.has(lastStrategyId)) return lastStrategyId;
     return focusId ?? st.rootId;
   };
 
@@ -249,7 +253,7 @@ export function WizardDialog() {
       if (!focusId) setFocusId(focus);
 
       if (s.action.kind === "updateFocus") {
-        updateElement(focus, { name: t, statement: body, undeveloped: false });
+        updateElement(focus, { name: t, statement: body });
         selectNode(focus);
         setNotice(`Updated goal “${t}” (${focus}).`);
         // keep fields as current goal for reference but allow next step with clear
@@ -315,6 +319,16 @@ export function WizardDialog() {
 
         {!isBranchStep && (
           <>
+            {step === 5 && structure && (
+              <label className="gk-label">
+                Goal supported by this Solution
+                <select className="gk-input" value={resolveParent("selection") ?? ""} onChange={(event) => selectNode(event.target.value)}>
+                  {[...structure.elements.values()].filter((element) => element.gkType === "GsnGoal").map((element) => (
+                    <option key={element.gsnId} value={element.gsnId}>{element.gsnId} — {element.name}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="gk-label">{s.titleLabel}</label>
             <input
               className="gk-input"

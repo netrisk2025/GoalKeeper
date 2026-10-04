@@ -1,0 +1,118 @@
+org.eclipse.xtend.lib-2.36.0-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+org/eclipse/xtend/lib/annotations/Data.java
+/**
+ * Copyright (c) 2014, 2018 itemis AG (http://www.itemis.eu) and others.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+
+guava-gwt-31.1-jre-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+com/google/common/primitives/super/com/google/common/primitives/DoublesMethodsForWeb.java
+/*
+ * Copyright (C) 2020 The Guava Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+
+
+org.eclipse.xtext.xbase.lib-2.36.0-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+org/eclipse/xtend2/lib/DefaultLineDelimiter.java
+/*******************************************************************************
+ * Copyright (c) 2014 itemis AG (http://www.itemis.eu) and others.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *******************************************************************************/
+
+
+gwt-user-2.11.0-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+com/google/gwt/activity/shared/AbstractActivity.java
+/*
+ * Copyright 2010 Google Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+
+emf-common-2.12.4-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+org/eclipse/emf/common/CommonPluginProperties.java
+/**
+ * Copyright (c) 2002-2010 Ed Merks and others.
+ * All rights reserved.   This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors: 
+ *   Ed Merks - Initial API and implementation
+ */
+
+
+emf-ecore-2.12.4-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+org/eclipse/emf/server/ecore/resource/URIServiceImpl.java
+/**
+ * Copyright (c) 2010 Ed Merks and others.
+ * All rights reserved.   This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors: 
+ *   Ed Merks - Initial API and implementation
+ */
+
+
+org.eclipse.xtend.lib.macro-2.36.0-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+org/eclipse/xtend/lib/macro/declaration/AnnotationReference.java
+/*******************************************************************************
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *******************************************************************************/
+
+
+
+guava-31.1-jre-sources.jar — representative source-file attribution; complete attributions remain in all supplied sources.
+com/google/thirdparty/publicsuffix/PublicSuffixType.java
+/*
+ * Copyright (C) 2013 The Guava Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+

@@ -31,3 +31,10 @@ export function findSupportCycle(elements: Map<string, GsnElement>): string | nu
   }
   return null;
 }
+
+/** Imported invalid data can also contain contextual or mixed cycles. */
+export function findArgumentCycle(elements: Map<string, GsnElement>): string | null {
+  return findSupportCycle(new Map([...elements].map(([id, element]) => [id, {
+    ...element, supportedBy: [...element.supportedBy, ...element.inContextOf],
+  }])));
+}
