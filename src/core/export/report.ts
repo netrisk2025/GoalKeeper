@@ -1,100 +1,59 @@
 import type { Finding, GoalStructure } from "../model/types";
 import { validateStructure } from "../rules/validate";
 
+function uniqueEvidence(structure: GoalStructure) {
+  return [...new Map([...structure.evidence.values()].map((note) => [note.filePath, note])).values()];
+}
+
+const REVIEW_LIMIT = "Structural validation does not establish evidence sufficiency, accepted risk, certification or approval by a security regime official.";
+
 export function exportMarkdown(structure: GoalStructure, findings?: Finding[]): string {
   const f = findings ?? validateStructure(structure);
   const root = structure.elements.get(structure.rootId);
-  const lines: string[] = [
-    `# Goal Structure: ${root?.name ?? structure.rootId}`,
-    "",
-    `- Root: **${structure.rootId}**`,
-    `- Directory: \`${structure.rootDir}\``,
-    `- Exported: ${new Date().toISOString()}`,
-    "",
-    "## Elements",
-    "",
+  const lines = [
+    `# Goal Structure: ${root?.name ?? structure.rootId}`, "",
+    `- Root: **${structure.rootId}**`, `- Directory: \`${structure.rootDir}\``,
+    `- Exported: ${new Date().toISOString()}`, "", REVIEW_LIMIT, "", "## Elements", "",
   ];
-
-  for (const el of [...structure.elements.values()].sort((a, b) =>
-    a.gsnId.localeCompare(b.gsnId),
-  )) {
+  for (const el of structure.elements.values()) {
     lines.push(`### ${el.gsnId} — ${el.name} (${el.gkType.replace("Gsn", "")})`);
     if (el.isRoot) lines.push("_Root Goal_");
     if (el.undeveloped) lines.push("_Undeveloped_");
-    lines.push("");
-    lines.push(el.statement || "_(empty statement)_");
-    lines.push("");
-    if (el.supportedBy.length) {
-      lines.push(`Supported by: ${el.supportedBy.map((id) => `[[${id}]]`).join(", ")}`);
+    lines.push("", el.statement || "_(empty statement)_", "");
+    for (const [label, links] of [["Supported by", el.supportedBy], ["In context of", el.inContextOf], ["Evidence", el.hasEvidence]] as const) {
+      if (links.length) lines.push(`${label}: ${links.map((id) => `[[${id}]]`).join(", ")}`);
     }
-    if (el.inContextOf.length) {
-      lines.push(`In context of: ${el.inContextOf.map((id) => `[[${id}]]`).join(", ")}`);
-    }
-    if (el.hasEvidence.length) {
-      lines.push(`Evidence: ${el.hasEvidence.map((id) => `[[${id}]]`).join(", ")}`);
-    }
+    for (const [key, value] of Object.entries(el.metadata ?? {})) lines.push(`- ${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
     lines.push("");
   }
-
+  lines.push("## Evidence notes", "");
+  for (const note of uniqueEvidence(structure)) {
+    lines.push(`### ${note.name}`, "", `- Note: ${note.filePath}`, `- Kind: ${note.kind}`);
+    if (note.artifactPath) lines.push(`- Artifact: ${note.artifactPath}`);
+    for (const [key, value] of Object.entries(note.metadata ?? {})) lines.push(`- ${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
+    lines.push("", note.statement, "");
+  }
   lines.push("## Validation findings", "");
-  if (f.length === 0) {
-    lines.push("No findings.");
-  } else {
-    for (const x of f) {
-      lines.push(`- **${x.severity}** \`${x.code}\`${x.nodeId ? ` (${x.nodeId})` : ""}: ${x.message}`);
-    }
-  }
-  lines.push("");
-  return lines.join("\n");
+  if (!f.length) lines.push("No structural findings. Evidence sufficiency still requires review.");
+  else for (const item of f) lines.push(`- **${item.severity}** \`${item.code}\`${item.nodeId ? ` (${item.nodeId})` : ""}: ${item.message}`);
+  return lines.join("\n") + "\n";
 }
 
 export function exportJson(structure: GoalStructure, findings?: Finding[]): string {
-  const f = findings ?? validateStructure(structure);
-  const payload = {
+  return JSON.stringify({
     schemaVersion: 1,
+    profile: "GSN Community Standard v3 — core notation",
+    reviewLimit: REVIEW_LIMIT,
     exportedAt: new Date().toISOString(),
-    root: {
-      gsnId: structure.rootId,
-      name: structure.elements.get(structure.rootId)?.name ?? "",
-      rootDir: structure.rootDir,
-    },
-    elements: [...structure.elements.values()].map((el) => ({
-      gsnId: el.gsnId,
-      gkType: el.gkType,
-      name: el.name,
-      statement: el.statement,
-      isRoot: el.isRoot,
-      undeveloped: el.undeveloped,
-      supportedBy: el.supportedBy,
-      inContextOf: el.inContextOf,
-      hasEvidence: el.hasEvidence,
-      filePath: el.filePath,
-    })),
+    root: { gsnId: structure.rootId, name: structure.elements.get(structure.rootId)?.name ?? "", rootDir: structure.rootDir },
+    elements: [...structure.elements.values()],
     relationships: [...structure.elements.values()].flatMap((el) => [
-      ...el.supportedBy.map((t) => ({
-        type: "SUPPORTED_BY" as const,
-        source: el.gsnId,
-        target: t,
-      })),
-      ...el.inContextOf.map((t) => ({
-        type: "IN_CONTEXT_OF" as const,
-        source: el.gsnId,
-        target: t,
-      })),
-      ...el.hasEvidence.map((t) => ({
-        type: "HAS_EVIDENCE" as const,
-        source: el.gsnId,
-        target: t,
-      })),
+      ...el.supportedBy.map((target) => ({ type: "SUPPORTED_BY", source: el.gsnId, target })),
+      ...el.inContextOf.map((target) => ({ type: "IN_CONTEXT_OF", source: el.gsnId, target })),
+      ...el.hasEvidence.map((target) => ({ type: "HAS_EVIDENCE", source: el.gsnId, target })),
     ]),
-    evidence: [...structure.evidence.values()].map((e) => ({
-      name: e.name,
-      kind: e.kind,
-      statement: e.statement,
-      filePath: e.filePath,
-    })),
+    evidence: uniqueEvidence(structure),
     layout: structure.layout,
-    findings: f,
-  };
-  return JSON.stringify(payload, null, 2);
+    findings: findings ?? validateStructure(structure),
+  }, null, 2);
 }

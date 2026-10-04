@@ -3,8 +3,8 @@ gk_schema: 1
 gk_type: Evidence
 name: TR-1
 evidence_kind: Test
-statement: Integration test suite passed for hazard H1 mitigations.
+statement: Illustrative report placeholder; no operational test result is asserted.
 ---
 # TR-1
 
-Integration test suite passed for hazard H1 mitigations.
+Illustrative report placeholder; no operational test result is asserted.

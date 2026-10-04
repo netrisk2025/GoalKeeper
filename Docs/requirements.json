@@ -1,0 +1,522 @@
+[
+  {
+    "title": "Core GSN profile",
+    "statement": "The application **SHALL** represent an assurance case using the core GSN profile defined in \u00a73 of this SRS.",
+    "method": "Analysis",
+    "verify": "Review the evidence for requirements 1.1\u20131.8 and confirm that no excluded extension is advertised as implemented.",
+    "source": "U; G Part 1 \u00a72; B \u00a76.5.11.1",
+    "rationale": "Provide a precise, bounded conformance claim.",
+    "id": "1",
+    "parent": ""
+  },
+  {
+    "title": "Six element types",
+    "statement": "The application **SHALL** support Goal, Strategy, Solution, Context, Assumption and Justification elements with the meanings defined in GSN v3 Table 1:2-1.",
+    "method": "Test",
+    "verify": "Create and round-trip one of each type; confirm that each retains its type, identifier and statement.",
+    "source": "G \u00a71:2.1.1\u20134; B \u00a76.5.11.6",
+    "rationale": "Preserve the six core argument roles.",
+    "id": "1.1",
+    "parent": "1"
+  },
+  {
+    "title": "Legal support matrix",
+    "statement": "The application **SHALL** permit SupportedBy creation only for Goal\u2192Goal, Goal\u2192Strategy, Goal\u2192Solution and Strategy\u2192Goal.",
+    "method": "Test",
+    "verify": "Exercise every ordered pair of the six core types; accept exactly the four listed pairs, including rejection of Strategy\u2192Solution.",
+    "source": "G Table 1:2-2, printed p18",
+    "rationale": "Remove the legacy nonstandard Strategy\u2192Solution exception.",
+    "id": "1.2",
+    "parent": "1"
+  },
+  {
+    "title": "Legal contextual matrix",
+    "statement": "The application **SHALL** permit InContextOf creation only from Goal or Strategy to Context, Assumption or Justification.",
+    "method": "Test",
+    "verify": "Exercise every ordered pair of the six core types; accept exactly the six listed pairs.",
+    "source": "G Table 1:2-2",
+    "rationale": "Prevent contextual material being mistaken for supporting evidence.",
+    "id": "1.3",
+    "parent": "1"
+  },
+  {
+    "title": "Acyclic mutations",
+    "statement": "The application **SHALL** reject a relationship creation that produces a directed cycle without changing the prior graph.",
+    "method": "Test",
+    "verify": "Attempt self-links and two- and three-node cycles; confirm rejection and deep equality of the prior graph.",
+    "source": "G \u00a71:2.2.2; B \u00a76.5.11.7",
+    "rationale": "Exclude circular support and context.",
+    "id": "1.4",
+    "parent": "1"
+  },
+  {
+    "title": "Duplicate relationships",
+    "statement": "The application **SHALL** reject a duplicate source, target and relationship-type triple without changing the prior graph.",
+    "method": "Test",
+    "verify": "Add the same legal edge twice; confirm the second action yields a diagnostic and one stored edge.",
+    "source": "B \u00a76.5.11.7/.14",
+    "rationale": "Keep the semantic graph unambiguous.",
+    "id": "1.5",
+    "parent": "1"
+  },
+  {
+    "title": "Root and identifiers",
+    "statement": "The validator **SHALL** report a diagnostic for each violation of one Goal root, no incoming support at that root, unique GSN identifiers and root reachability of non-root elements.",
+    "method": "Test",
+    "verify": "Validate fixtures with a missing root, a second root, a non-Goal root, an incoming root edge, duplicate GSN IDs and an unreachable node; confirm each violation is reported.",
+    "source": "G \u00a71:2.1.2; B \u00a76.5.11.8/.14; L FR-8\u201311",
+    "rationale": "Apply the standalone case boundary without attributing the single-root product policy to the standard.",
+    "id": "1.6",
+    "parent": "1"
+  },
+  {
+    "title": "Imported rule violations",
+    "statement": "The validator **SHALL** identify imported illegal relationships and cycles with the affected identifiers.",
+    "method": "Test",
+    "verify": "Load a legacy Strategy\u2192Solution fixture and cyclic fixture; confirm both remain inspectable and yield affected-node diagnostics rather than a silent conversion.",
+    "source": "U; G Table 1:2-2; B \u00a76.5.11.22",
+    "rationale": "Make migration defects visible.",
+    "id": "1.7",
+    "parent": "1"
+  },
+  {
+    "title": "Undeveloped semantics",
+    "statement": "The application **SHALL** restrict the undeveloped marker to Goal and Strategy elements.",
+    "method": "Test",
+    "verify": "Toggle the marker on each type and validate imported invalid flags; confirm only Goals and Strategies accept the marker and invalid imported flags are reported.",
+    "source": "G Table 1:2-1, printed p18",
+    "rationale": "Represent explicitly unfinished argument branches.",
+    "id": "1.8",
+    "parent": "1"
+  },
+  {
+    "title": "GSN presentation",
+    "statement": "The primary diagram **SHALL** use the core GSN graphical notation defined in \u00a73 of this SRS.",
+    "method": "Inspection",
+    "verify": "Compare a six-element fixture and an undeveloped element against the standard pages 17\u201318 in the primary diagram and SVG export.",
+    "source": "U; G Tables 1:2-1/2",
+    "rationale": "Make customer-facing arguments recognizably GSN.",
+    "id": "2",
+    "parent": ""
+  },
+  {
+    "title": "Element geometry",
+    "statement": "The renderer **SHALL** draw Goals as rectangles, Strategies as parallelograms, Solutions as circles, Contexts with straight horizontal sides and rounded ends, and Assumptions and Justifications as ovals.",
+    "method": "Inspection",
+    "verify": "Inspect the six-shape fixture at 100% zoom; measure Solution width and height as equal within one CSS pixel and confirm each other outline matches Table 1:2-1.",
+    "source": "G Table 1:2-1; U",
+    "rationale": "Protect the notation from theme-driven shape changes.",
+    "id": "2.1",
+    "parent": "2"
+  },
+  {
+    "title": "Notation decorators",
+    "statement": "The renderer **SHALL** place A or J at the top-right or bottom-right of its corresponding oval and a hollow diamond at the bottom centre of undeveloped Goals and Strategies.",
+    "method": "Inspection",
+    "verify": "Inspect A, J, undeveloped Goal and undeveloped Strategy fixtures in both themes and exported SVG; confirm markers are visible outside statement text.",
+    "source": "G Table 1:2-1",
+    "rationale": "Retain semantics that oval shape alone cannot convey.",
+    "id": "2.2",
+    "parent": "2"
+  },
+  {
+    "title": "Relationship arrows",
+    "statement": "The renderer **SHALL** draw SupportedBy with a filled arrowhead and InContextOf with a hollow arrowhead pointing toward the target element.",
+    "method": "Inspection",
+    "verify": "Inspect both relationship types in both themes and SVG; verify head fill and direction against the source/target fixture IDs.",
+    "source": "G Table 1:2-2",
+    "rationale": "Distinguish evidence support from context without relying on color.",
+    "id": "2.3",
+    "parent": "2"
+  },
+  {
+    "title": "Complete readable statements",
+    "statement": "At 100% diagram zoom, the renderer **SHALL** display the full identifier and statement of each element using statement text of at least 14 CSS pixels without ellipsis or clipping.",
+    "method": "Test",
+    "verify": "Render the long-text fixture defined in VP-02 at 100% zoom; inspect text extents against symbol boundaries and compare visible text with the model.",
+    "source": "U; G \u00a71:2.1.2, \u00a71:2.3; B \u00a76.5.11.25",
+    "rationale": "Make professional review possible without hidden claims.",
+    "id": "2.4",
+    "parent": "2"
+  },
+  {
+    "title": "Contrast",
+    "statement": "The presentation **SHALL** provide at least 4.5:1 contrast for statement text and 3:1 contrast for diagram outlines and arrowheads against their adjacent backgrounds in light and dark themes.",
+    "method": "Analysis",
+    "verify": "Calculate relative-luminance contrast from the shipped tokens for both themes and record each ratio; exclude ornamental accents that carry no information.",
+    "source": "U; B \u00a76.4.1; project-derived measurable threshold",
+    "rationale": "Keep the argument legible for reviewers.",
+    "id": "2.5",
+    "parent": "2"
+  },
+  {
+    "title": "Restrained theme",
+    "statement": "The presentation **SHALL** confine Art Nouveau ornament to the application chrome outside the GSN symbols and relationship paths.",
+    "method": "Inspection",
+    "verify": "Inspect a full-canvas screenshot in each theme; confirm symbols and paths have no botanical, filigree or banner imagery.",
+    "source": "U; B \u00a76.3.1/\u00a76.4.1; L NFR-6",
+    "rationale": "Resolve stylistic ambiguity without altering GSN notation.",
+    "id": "2.6",
+    "parent": "2"
+  },
+  {
+    "title": "Diagram workspace",
+    "statement": "At a 1440\u00d7900 viewport with auxiliary panels closed, the Structure workspace **SHALL** allocate at least 80 percent of its usable content width to the GSN canvas.",
+    "method": "Test",
+    "verify": "Measure canvas width divided by workspace width at the specified viewport; confirm at least 0.80 and that the graph remains usable after reopening panels.",
+    "source": "U",
+    "rationale": "Return screen area to the customer-facing case.",
+    "id": "2.7",
+    "parent": "2"
+  },
+  {
+    "title": "Theme selection",
+    "statement": "The application **SHALL** restore the last selected light or dark theme on restart.",
+    "method": "Test",
+    "verify": "Select each theme, restart the application and confirm its persisted appearance.",
+    "source": "L NFR-5; B \u00a76.4.1",
+    "rationale": "Preserve the existing standalone theme workflow.",
+    "id": "2.8",
+    "parent": "2"
+  },
+  {
+    "title": "Alternate model view",
+    "statement": "The application **SHALL** expose the alternate model view through a View-menu command that opens a separate dismissible pop-up.",
+    "method": "Demonstration",
+    "verify": "Open the View menu, launch the model view and close it with the close control and Escape; confirm it is absent from the main workspace before launch and after dismissal.",
+    "source": "U; supersedes B \u00a76.4.2/\u00a76.5.11.26",
+    "rationale": "Keep technical projections available on demand.",
+    "id": "3",
+    "parent": ""
+  },
+  {
+    "title": "Projection parity",
+    "statement": "The alternate model view **SHALL** derive its graph and model text from the currently open argument without modifying its semantics.",
+    "method": "Test",
+    "verify": "Compare node IDs, types and relationship triples in the primary graph, projection graph and model text; open and close the view and confirm unchanged semantic serialization.",
+    "source": "U; B \u00a73.7.6/\u00a76.5.11.26 adapted",
+    "rationale": "Maintain one argument across presentations.",
+    "id": "3.1",
+    "parent": "3"
+  },
+  {
+    "title": "Projection boundary",
+    "statement": "The alternate model view **SHALL** identify its output as an illustrative SysML/KerML-style projection unless the output has been verified by a conforming language parser.",
+    "method": "Inspection",
+    "verify": "Inspect the projection label and export description; confirm there is no unsupported claim of conforming SysML/KerML interchange.",
+    "source": "U; B \u00a73.7.6 adapted",
+    "rationale": "Avoid conflating familiar presentation with certified language translation.",
+    "id": "3.2",
+    "parent": "3"
+  },
+  {
+    "title": "Pop-up accessibility",
+    "statement": "The alternate model pop-up **SHALL** support keyboard focus entry, contained tab navigation, Escape dismissal and focus return to its invoking control.",
+    "method": "Test",
+    "verify": "Launch using the keyboard, traverse controls forward and backward, press Escape and confirm the invoking control receives focus.",
+    "source": "U; B \u00a76.4.1 adapted",
+    "rationale": "Make the requested pop-up usable without a pointing device.",
+    "id": "3.3",
+    "parent": "3"
+  },
+  {
+    "title": "Layout and navigation",
+    "statement": "The application **SHALL** provide an explicit Arrange command for a hierarchical top-down GSN layout using the ELK layered engine family used by the Loss Tool prototype.",
+    "method": "Test",
+    "verify": "Arrange a branched case with shared support; confirm parents are above supporting descendants, context is distinguishable from support, and geometry boxes do not overlap.",
+    "source": "U; A docs/Architecture.md; B \u00a76.5.11.16 adapted",
+    "rationale": "Reuse the proven Loss prototype layout approach.",
+    "id": "4",
+    "parent": ""
+  },
+  {
+    "title": "Stable manual positions",
+    "statement": "The application **SHALL** preserve existing working node positions during selection, statement editing, validation and evidence association until an explicit layout action is requested.",
+    "method": "Test",
+    "verify": "Drag a node, perform each listed operation and compare coordinates; confirm equality before explicit Arrange or Last Saved.",
+    "source": "B \u00a76.5.11.16; L FR-67\u201378",
+    "rationale": "Prevent distracting layout movement.",
+    "id": "4.1",
+    "parent": "4"
+  },
+  {
+    "title": "Saved layout",
+    "statement": "The application **SHALL** restore positions and viewport saved by Save Layout when the same argument is reopened.",
+    "method": "Test",
+    "verify": "Drag nodes, change zoom and pan, save layout, reopen and compare the saved positions and viewport.",
+    "source": "B \u00a76.5.11.9; L FR-71\u201380",
+    "rationale": "Make reviewed figures reproducible.",
+    "id": "4.2",
+    "parent": "4"
+  },
+  {
+    "title": "Layout merge",
+    "statement": "The application **SHALL** reconcile Last Saved layout with the current graph by restoring saved extant positions, placing new nodes and ignoring deleted-node positions.",
+    "method": "Test",
+    "verify": "Save a layout, add a node and delete another, invoke Last Saved and confirm restored extant coordinates, finite new coordinates and no deleted visual node.",
+    "source": "L FR-73\u201377; B \u00a76.5.11.22",
+    "rationale": "Keep presentation metadata subordinate to semantic content.",
+    "id": "4.3",
+    "parent": "4"
+  },
+  {
+    "title": "Layout authority",
+    "statement": "The application **SHALL** write layout metadata only through the explicit Save Layout action.",
+    "method": "Test",
+    "verify": "Compare layout storage before and after node drag and semantic Save; confirm only Save Layout changes the stored layout.",
+    "source": "L FR-79\u201380",
+    "rationale": "Preserve the established distinction between semantic and visual saves.",
+    "id": "4.4",
+    "parent": "4"
+  },
+  {
+    "title": "Diagram navigation",
+    "statement": "The Structure workspace **SHALL** provide pan, zoom, fit-to-argument, node selection and manual node dragging.",
+    "method": "Demonstration",
+    "verify": "Exercise each listed operation on the FireSat case and confirm that selection exposes the correct element for inspection.",
+    "source": "B \u00a76.5.11.15; L FR-29\u201337 adapted",
+    "rationale": "Support authoring and review at different scales.",
+    "id": "4.5",
+    "parent": "4"
+  },
+  {
+    "title": "Standalone authoring and persistence",
+    "statement": "The application **SHALL** support local assurance-case authoring without an SSTPA Tools backend or graph database.",
+    "method": "Demonstration",
+    "verify": "Disconnect network access, open a local vault, edit an argument, validate it, save it and reopen it.",
+    "source": "U; L FR-1/FR-58, NFR-1",
+    "rationale": "Keep the prototype independently operable.",
+    "id": "5",
+    "parent": ""
+  },
+  {
+    "title": "Vault workflow",
+    "statement": "The application **SHALL** support choosing a local vault and creating or opening a Goal root in that vault.",
+    "method": "Demonstration",
+    "verify": "Create a vault and root, close it, choose it again and confirm the new root is available.",
+    "source": "L FR-2\u20136; B \u00a76.5.11.3 adapted",
+    "rationale": "Replace SoI and Asset-Loss invocation with local case selection.",
+    "id": "5.1",
+    "parent": "5"
+  },
+  {
+    "title": "Element editing",
+    "statement": "The application **SHALL** support creation, statement editing and deletion of the six core GSN element types.",
+    "method": "Test",
+    "verify": "Create each type, edit its statement and remove a non-root sample; confirm the resulting persisted model matches the operations.",
+    "source": "B \u00a76.5.11.10; L FR-24\u201328",
+    "rationale": "Retain an authoring application rather than a static renderer.",
+    "id": "5.2",
+    "parent": "5"
+  },
+  {
+    "title": "Semantic markdown",
+    "statement": "The application **SHALL** persist semantic elements and relationships in Markdown notes with stable frontmatter and Obsidian-compatible wikilinks.",
+    "method": "Test",
+    "verify": "Round-trip fixtures containing every element and both relationship types; compare semantic values and inspect the generated wikilinks.",
+    "source": "L FR-52\u201361; B \u00a76.5.11.9 adapted",
+    "rationale": "Enable local portability and alternate note tools.",
+    "id": "5.3",
+    "parent": "5"
+  },
+  {
+    "title": "Semantic layout separation",
+    "statement": "The application **SHALL** preserve semantic nodes and relationships when layout metadata is absent or stale.",
+    "method": "Test",
+    "verify": "Remove the layout file and introduce a stale node position in separate fixtures; confirm the same semantic serialization and a usable layout in both.",
+    "source": "L FR-62; B \u00a76.5.11.9/.22",
+    "rationale": "Prevent visualization metadata from becoming the argument authority.",
+    "id": "5.4",
+    "parent": "5"
+  },
+  {
+    "title": "Actionable validation",
+    "statement": "The application **SHALL** present validation findings with severity, affected identifier and a rule-specific explanation.",
+    "method": "Test",
+    "verify": "Validate invalid, incomplete and valid fixtures and inspect their finding records and visible summaries.",
+    "source": "B \u00a76.5.11.14/.22",
+    "rationale": "Enable correction without reverse-engineering the validator.",
+    "id": "5.5",
+    "parent": "5"
+  },
+  {
+    "title": "Save errors",
+    "statement": "If a vault read or write fails, the application **SHALL** display the failure without reporting successful persistence.",
+    "method": "Test",
+    "verify": "Use a failed filesystem operation fixture or read-only destination and confirm a visible failure with no success state.",
+    "source": "B \u00a76.5.11.22; L FR-56 adapted",
+    "rationale": "Avoid mistaken assurance that edits reached disk.",
+    "id": "5.6",
+    "parent": "5"
+  },
+  {
+    "title": "Data privacy",
+    "statement": "The application **SHALL** perform the standalone core workflows without transmitting vault contents to a network service.",
+    "method": "Analysis",
+    "verify": "Inspect runtime network behavior and source imports for open, edit, validate, arrange, save and export; confirm no vault payload leaves the local process.",
+    "source": "L NFR-12",
+    "rationale": "Preserve the offline privacy property.",
+    "id": "5.7",
+    "parent": "5"
+  },
+  {
+    "title": "Atomic file replacement",
+    "statement": "When saving an existing vault file, the native filesystem adapter **SHALL** replace that file through a completed temporary-file write and rename operation.",
+    "method": "Test",
+    "verify": "Inject a temporary-write failure and confirm the original file content remains intact; exercise a successful replacement and confirm the complete new content. Record native runtime qualification separately from mocked adapter tests.",
+    "source": "L FR-56; B \u00a76.5.11.22 adapted",
+    "rationale": "Reduce corruption risk without claiming a multi-file transaction.",
+    "id": "5.8",
+    "parent": "5"
+  },
+  {
+    "title": "Vault-relative paths",
+    "statement": "The vault adapter **SHALL** reject absolute paths and parent-directory traversal segments before executing a vault file read or write.",
+    "method": "Test",
+    "verify": "Attempt absolute POSIX/Windows paths and forward/backslash parent traversal paths; confirm rejection before any filesystem call and acceptance of a normal vault-relative note path.",
+    "source": "L NFR-14; project-derived input boundary",
+    "rationale": "Keep vault operations within their user-selected path boundary.",
+    "id": "5.9",
+    "parent": "5"
+  },
+  {
+    "title": "Wizard evidence control",
+    "statement": "The Goal Wizard **SHALL** require an explicit author action before applying a proposed argument change or attaching evidence.",
+    "method": "Test",
+    "verify": "Open and dismiss each coaching step without Apply; confirm the graph is unchanged, then apply a proposal and confirm only the displayed change appears.",
+    "source": "L FR-46\u201351; G Part 2 \u00a73",
+    "rationale": "Retain optional guided authoring without inventing evidence or forced edits.",
+    "id": "5.10",
+    "parent": "5"
+  },
+  {
+    "title": "Evidence and review exports",
+    "statement": "The application **SHALL** distinguish structural argument validity from evidence sufficiency and approval by a security regime official.",
+    "method": "Inspection",
+    "verify": "Inspect validation and example/report language; confirm passing syntax is not labeled certification, accepted risk or completed independent verification.",
+    "source": "U; G \u00a70:4 and \u00a71:2.3; B \u00a76.5.11.23 adapted",
+    "rationale": "A persuasive case still requires evidence and accountable review.",
+    "id": "6",
+    "parent": ""
+  },
+  {
+    "title": "Evidence association",
+    "statement": "The application **SHALL** support one or more evidence-note references on a Solution without drawing an evidence node inside the Solution circle.",
+    "method": "Test",
+    "verify": "Attach two evidence notes to a Solution, save and reopen; confirm both references and inspect the circle and evidence details.",
+    "source": "G \u00a71:2.3.4; B \u00a76.5.11.12/.25",
+    "rationale": "Represent Solutions as evidence references, preserving the GSN symbol.",
+    "id": "6.1",
+    "parent": "6"
+  },
+  {
+    "title": "Incomplete evidence",
+    "statement": "The validator **SHALL** report a Solution with no resolvable evidence-note reference as incomplete.",
+    "method": "Test",
+    "verify": "Validate empty-reference and missing-target Solution fixtures; confirm incomplete diagnostics and compare with a resolvable-reference fixture.",
+    "source": "B \u00a76.5.11.8/.12/.22; L FR-38\u201341",
+    "rationale": "Make absent evidence visible.",
+    "id": "6.2",
+    "parent": "6"
+  },
+  {
+    "title": "Unfinished support",
+    "statement": "The validator **SHALL** identify Goals and Strategies without supporting children while preserving explicitly undeveloped status.",
+    "method": "Test",
+    "verify": "Compare supported, unsupported and explicitly undeveloped Goal/Strategy fixtures; confirm findings distinguish unfinished branches without silently marking them complete.",
+    "source": "G Table 1:2-1; B \u00a76.5.11.23",
+    "rationale": "Expose the remaining work in a draft case.",
+    "id": "6.3",
+    "parent": "6"
+  },
+  {
+    "title": "SVG figure export",
+    "statement": "The application **SHALL** export a full-argument SVG containing the current GSN shapes, complete statement text and relationship styles.",
+    "method": "Test",
+    "verify": "Export the six-element and FireSat fixtures, reopen the SVG and compare visible IDs, text, shape types and edge directions with the source graph.",
+    "source": "U; B \u00a76.5.11.19/.23",
+    "rationale": "Supply scalable figures for customer and certification reports.",
+    "id": "6.4",
+    "parent": "6"
+  },
+  {
+    "title": "Structured exports",
+    "statement": "The application **SHALL** export Markdown and JSON representations containing the argument identifiers, statements, typed relationships and evidence references.",
+    "method": "Test",
+    "verify": "Export a known fixture and compare its nodes, statements, relationship triples and evidence links with the model.",
+    "source": "B \u00a76.5.11.19; L FR-43\u201345",
+    "rationale": "Keep the argument reviewable and transferable.",
+    "id": "6.5",
+    "parent": "6"
+  },
+  {
+    "title": "FireSat example",
+    "statement": "The repository **SHALL** include an openable FireSat GSN case whose Loss claims and source references derive from the prototype Loss Tool example.",
+    "method": "Analysis",
+    "verify": "Compare the shipped case and its source notes against the referenced Loss Tool fixture; confirm retained Loss identity, claim derivation and source file provenance.",
+    "source": "U; A FireSat example",
+    "rationale": "Demonstrate the required workflow with traceable source material.",
+    "id": "6.6",
+    "parent": "6"
+  },
+  {
+    "title": "Illustrative evidence limits",
+    "statement": "The FireSat example **SHALL** identify prototype calculations as illustrative and expose missing independent verification or acceptance evidence.",
+    "method": "Inspection",
+    "verify": "Read the example contexts, assumptions, evidence notes and report; confirm no illustrative metric or placeholder document is presented as an operational FireSat measurement or approval.",
+    "source": "U; A docs/Architecture.md metric semantics",
+    "rationale": "Avoid fabricating the substance of the assurance case.",
+    "id": "6.7",
+    "parent": "6"
+  },
+  {
+    "title": "Development storyboard",
+    "statement": "The development report **SHALL** show the progression from prototype Loss source through top claim, context, strategy, supporting claims, evidence and final reviewer view.",
+    "method": "Inspection",
+    "verify": "Review each storyboard scene and its source/claim/evidence explanation; confirm the final scene identifies unresolved evidence or decision gaps.",
+    "source": "U; G Part 2 \u00a73",
+    "rationale": "Explain how the case was constructed, not only its final appearance.",
+    "id": "6.8",
+    "parent": "6"
+  },
+  {
+    "title": "SSTPA integration boundary",
+    "statement": "The architecture **SHALL** separate the semantic case model and validation rules from diagram rendering and storage adapters.",
+    "method": "Inspection",
+    "verify": "Inspect module imports and the architecture document; confirm core model/rule modules have no React, Tauri or SSTPA backend dependency.",
+    "source": "U; A docs/Architecture.md; L Architecture \u00a74",
+    "rationale": "Permit a future SSTPA host adapter without rewriting GSN semantics.",
+    "id": "7",
+    "parent": ""
+  },
+  {
+    "title": "Integration mapping",
+    "statement": "The repository **SHALL** document mappings from standalone GSN types, relationship types, evidence notes and layout metadata to SSTPA Goal Keeper data.",
+    "method": "Inspection",
+    "verify": "Review the integration mapping and confirm each standalone type and relationship has an explicit SSTPA destination or deferred decision.",
+    "source": "U; B \u00a76.5.11.6\u20139/.12/.21",
+    "rationale": "Make eventual integration concrete without pretending that a live adapter exists.",
+    "id": "7.1",
+    "parent": "7"
+  },
+  {
+    "title": "Read-only source isolation",
+    "statement": "The delivered changes **SHALL** remain within the GoalKeeper repository while treating SSTPA Tools and the Loss Tool prototype as reference sources.",
+    "method": "Inspection",
+    "verify": "Inspect changed-file lists and source-tree status recorded for the task; confirm no source-project edit belongs to this change.",
+    "source": "U; L C-1/C-2; project Agent.md",
+    "rationale": "Protect the flagship and source prototype during independent development.",
+    "id": "7.2",
+    "parent": "7"
+  },
+  {
+    "title": "Verification record",
+    "statement": "The development report **SHALL** record observed results for each SRS requirement and identify any unexecuted procedure, failed test or platform limitation.",
+    "method": "Inspection",
+    "verify": "Cross-check the report against the SRS IDs, commands, logs and screenshots; confirm that no unexecuted procedure is reported as passed.",
+    "source": "U; B \u00a76.5.11.24; L NFR-15\u201318",
+    "rationale": "Make the push and completion claim reviewable.",
+    "id": "7.3",
+    "parent": "7"
+  }
+]

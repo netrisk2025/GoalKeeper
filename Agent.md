@@ -1,42 +1,47 @@
 # Agent Directive — GoalKeeper (Standalone)
 
-You are assisting with the **GoalKeeper** standalone desktop application. Respond to the user as **"Boss"**.
+You are assisting with the **GoalKeeper** standalone assurance-case application. Respond to the user as **Boss**.
 
-## What this project is
+## Product and authority
 
-GoalKeeper is a standalone desktop application that lets a user graphically construct and maintain a **Goal Structuring Notation (GSN)** assurance argument for a user-selected root goal. It is adapted from the **Goal Keeper Add-on Tool** in SSTPA Tools (`sstpa.goalkeeper`, SRS §6.5.11), with these deliberate differences:
+GoalKeeper adapts the SSTPA Tools Goal Keeper add-on into a local application with Markdown vault storage. The **GSN Community Standard Version 3 core profile** governs both semantics and the primary diagram's geometry. Use rectangles, parallelograms, circles, rounded-ended Contexts, A/J-marked ovals, undeveloped diamonds and the standard filled/hollow arrows. SupportedBy from Strategy goes to Goal only.
 
-| SSTPA Goal Keeper (addon) | GoalKeeper (standalone) |
+The current direction (2026-10-04) supersedes the old KerML-primary exception. An illustrative SysML/KerML-style graph and model text remain available only through a **View-menu pop-up**, with no permanently allocated main-window region. Restrained Art Nouveau styling applies to chrome wherever the GSN standard leaves presentation choices open; it never replaces or decorates the notation itself.
+
+| Standalone boundary | Treatment |
 |---|---|
-| Neo4j graph as source of truth | Markdown (`.md`) files as source of truth |
-| Root goals tied to Asset–Loss cases | User-selected / wizard-guided Root Goals |
-| Evidence = Validation / Verification / Loss nodes | Evidence = vault Evidence notes (and optional linked files) |
-| Requires SSTPA backend + SoI | Local vault directory only |
-| Visualization uses KerML-style instrument UI | KerML-inspired nodes on canvas (not GSN-3 shapes); subtle Art Nouveau chrome; light + dark |
-| Layout snapshot on Root Goal | Save Layout / Last Saved; Layout Manager for new nodes; progressive canvas display |
+| Semantic authority | Markdown elements and evidence notes with Obsidian wikilinks |
+| Root selection | User-selected or wizard-guided Goal root; optional Asset/Loss source provenance |
+| Evidence | Referenced local notes and artifacts; no invented tests, measurements or approval |
+| Main presentation | Customer-facing core GSN notation with full readable statements |
+| Layout | ELK layered engine family used by the Loss Tool prototype; manual positions; explicit Save Layout and Last Saved |
+| Integration | Pure model/rules and host/storage boundary for eventual SSTPA Tools integration |
+| Compliance scope | Core profile only; no claim to implement pattern/modular/ACP/dialectic extensions or parser-verified SysML/KerML interchange |
 
-Authoritative GSN semantics: `Docs/GSN_STANDARD-VERSION 3.PDF` (Community Standard Version 3). Where visualization diverges, the app uses **KerML 1.0–style** presentation consistent with SSTPA Tools Goal Keeper.
+## Read order
 
-## Read order (this directory)
+1. `FloorPlan.md` — project map.
+2. `Agent.md` — this directive.
+3. `Docs/SRS_GoalKeeper.md` — current requirements.
+4. `Docs/VERIFICATION_GoalKeeper.md` — requirement verification procedures.
+5. `Docs/ARCHITECTURE_GoalKeeper.md` — design and integration contract.
+6. `Resource.md` — terms and imperatives.
 
-1. **FloorPlan.md** — map of this project
-2. **Agent.md** — this file
-3. **Docs/SRS_GoalKeeper.md** — requirements (approve before coding)
-4. **Docs/ARCHITECTURE_GoalKeeper.md** — tech stack and implementation plan
-5. **Resource.md** — imperative terminology (SHALL / Should / Will / May), same as Projects root
+The user's current instruction already authorizes SRS → verification procedures → implementation. Do not reintroduce a redundant approval gate from the superseded v0.2 documents. Use `Docs/REQUIREMENT_DISPOSITION.md` when a legacy source appears to conflict with the current baseline.
 
-## Hard rules
+## Rules
 
-1. **Do not modify** any files under `/home/netrisk/Projects/SSTPA Tools` (or backups/archives of it). Read-only reference only.
-2. **All development** lives under `/home/netrisk/Projects/GoalKeeper`.
-3. GitHub remote (when initialized): `https://github.com/netrisk2025/GoalKeeper.git`.
-4. Prefer small, reviewable changes; keep docs current when behavior is decided or deferred.
-5. Call the user **Boss**.
+1. Keep development in `/home/netrisk/Projects/GoalKeeper`.
+2. Treat `/home/netrisk/Projects/SSTPA Tools`, its backups and `/home/netrisk/Projects/Attack Tree` as read-only reference sources. Do not enter archives unless explicitly requested.
+3. Use `https://github.com/netrisk2025/GoalKeeper.git` as the project remote. Push only with user authorization; never force-push routine work.
+4. Keep the SRS, architecture, verification evidence and source dispositions current. A passing structural validator is not evidence of certification or accepted operational risk.
+5. Preserve ELK license notices and corresponding source; run `node scripts/verify-licenses.mjs` before distribution and `node scripts/verify-licenses.mjs --dist` after building.
+6. Record native-desktop verification separately from browser and pure-core checks. Do not label unexecuted requirements passed.
 
-## Reference sources (read-only)
+## Reference sources
 
-- SSTPA Goal Keeper implementation: `SSTPA Tools/frontend/src/tools/goalkeeper/GoalKeeperTool.tsx`
-- SSTPA schema (GSN nodes/rels): `SSTPA Tools/docs/schema/node-properties.json`, `relationships.json`
-- SSTPA SRS §6.5.11: `SSTPA Tools/SSTPA Tool SRS V7.md`
-- Developer wiki: `SSTPA_Dev_WIKI/wiki/entities/tool-goalkeeper.md`
-- GSN Community Standard v3: `Docs/GSN_STANDARD-VERSION 3.PDF`
+- `Docs/GSN_STANDARD-VERSION 3.PDF` — local normative core notation and semantics.
+- `/home/netrisk/Projects/SSTPA Tools/SSTPA Tool SRS V7.md`, especially §§6.4 and 6.5.11.
+- `/home/netrisk/Projects/SSTPA Tools/frontend/src/tools/goalkeeper/GoalKeeperTool.tsx` — source behavior, not authority over the new rendering direction.
+- `/home/netrisk/Projects/Attack Tree/docs/Architecture.md` and its FireSat fixture/provenance — layout inspiration and example Loss source.
+- `/home/netrisk/Projects/Requirements/Skills.md` — binding requirements quality and verification workflow.

@@ -1,0 +1,811 @@
+{
+  "schemaVersion": 1,
+  "snapshotDate": "2026-10-04",
+  "caseStatus": "Illustrative draft — operational evidence and authority acceptance remain outstanding.",
+  "purpose": "Reproducible source inventory for the GoalKeeper FireSat example. This is evidence of what the prototype model records, not of mitigation effectiveness.",
+  "sources": [
+    {
+      "repository": "https://github.com/netrisk2025/attack-tree",
+      "revision": "8d7641d8e1fe5ef9fcbf7bb912dde4cdf922fc28",
+      "file": "src/examples.ts",
+      "symbol": "createOverview",
+      "sha256": "1d94c15fd81bf81f90392ba14258d22a590e3e019edfce3b0db185bec8add554"
+    },
+    {
+      "repository": "https://github.com/netrisk2025/attack-tree",
+      "revision": "8d7641d8e1fe5ef9fcbf7bb912dde4cdf922fc28",
+      "file": "src/domain/paths.ts",
+      "symbol": "analyzePaths",
+      "sha256": "a8ebf5cb1a41a2e94d407e9265859037ad0f4f87f177b562703a7055555029f7"
+    },
+    {
+      "repository": "SSTPA Tools local reference",
+      "revision": "05e076bfc8a18e36e146b5ecf01121c32566448c",
+      "file": "Example_Data/FireSat/model/10-space-segment.yaml",
+      "sha256": "11012f4fa3c2eccd6f00bd67a39b5dc2c4572efd58ab4ea4514d857f9c32323f"
+    },
+    {
+      "repository": "SSTPA Tools local reference",
+      "revision": "05e076bfc8a18e36e146b5ecf01121c32566448c",
+      "file": "Example_Data/FireSat/FireSat-Hierarchy.md",
+      "sha256": "a0975f57d80422bff718fb7bb61df261fb72483a62f20bd2920cd39838292f72"
+    }
+  ],
+  "extraction": "Read-only in-memory evaluation of the unchanged prototype createOverview() and analyzePaths() functions using TypeScript transpilation.",
+  "loss": {
+    "id": "loss",
+    "hid": "DEMO_LOSS",
+    "name": "Loss of authentic fire reports",
+    "provenance": "Prototype illustration"
+  },
+  "scope": {
+    "asset": "DEMO_AST_FIRE_REPORTS · Fire detection reports",
+    "environment": "ENV_1.1.2_1 · Payload Operating Environment",
+    "soi": "SYS_1.1.2_0 · Fire Detection Payload",
+    "criticality": "Mission Critical",
+    "assurance": "Authenticity"
+  },
+  "inventory": {
+    "nodeCount": 25,
+    "edgeCount": 25,
+    "nodes": [
+      {
+        "id": "loss",
+        "hid": "DEMO_LOSS",
+        "label": "Loss of authentic fire reports",
+        "type": "Loss",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "env",
+        "hid": "ENV_1.1.2_1",
+        "label": "Payload Operating Environment",
+        "type": "Environment",
+        "description": "Cryogenic sensor operation on a thermally stable platform. Source: FireSat Space Segment YAML.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "standby",
+        "hid": "ST_1.1.2_1",
+        "label": "Standby",
+        "type": "State",
+        "description": "Payload standby; StateSequence 0. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "imaging",
+        "hid": "ST_1.1.2_2",
+        "label": "Imaging",
+        "type": "State",
+        "description": "Sensor scanning with detection processing active; StateSequence 1. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "processor",
+        "hid": "EL_1.1.2_3",
+        "label": "Payload Processor",
+        "type": "Component",
+        "description": "On-board fire classification and report generation computer. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "video",
+        "hid": "INT_1.1.2_1",
+        "label": "Sensor Video Input Interface",
+        "type": "Interface",
+        "description": "Digital video input from the IR sensor assembly. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "classify",
+        "hid": "FUN_1.1.2_2",
+        "label": "Classify Fire Detections",
+        "type": "SystemFunction",
+        "description": "Score thermal anomalies as fire or non-fire on board. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "downlink",
+        "hid": "INT_1.1.2_2",
+        "label": "Payload Downlink Feed Interface",
+        "type": "Interface",
+        "description": "Detection report hand-off into the payload comms unit. Source: FireSat.",
+        "provenance": "FireSat reference"
+      },
+      {
+        "id": "firmware",
+        "hid": "DEMO_FIRMWARE",
+        "label": "Alter payload firmware",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "diagnostic",
+        "hid": "DEMO_DIAGNOSTIC",
+        "label": "Abuse diagnostic access",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "signed",
+        "hid": "DEMO_SIGNED",
+        "label": "Verify signed firmware",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "custody",
+        "hid": "DEMO_CUSTODY",
+        "label": "Protect update key custody",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "keytheft",
+        "hid": "DEMO_KEYTHEFT",
+        "label": "Obtain update authorization",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "derived-key",
+        "hid": "DEMO_DERIVED_KEY",
+        "label": "Update signing key confidentiality",
+        "type": "Asset",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "video-tamper",
+        "hid": "DEMO_VIDEO_TAMPER",
+        "label": "Inject altered sensor frames",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "frame-check",
+        "hid": "DEMO_FRAME_CHECK",
+        "label": "Validate frame provenance",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "model-bias",
+        "hid": "DEMO_MODEL_BIAS",
+        "label": "Bias detection classification",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "cross-check",
+        "hid": "DEMO_CROSS_CHECK",
+        "label": "Cross-check detection evidence",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "calibration",
+        "hid": "DEMO_CALIBRATION",
+        "label": "Alter calibration reference",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "baseline",
+        "hid": "DEMO_BASELINE",
+        "label": "Protect calibration baseline",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "review-bypass",
+        "hid": "DEMO_REVIEW_BYPASS",
+        "label": "Bypass calibration review",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "replay",
+        "hid": "DEMO_REPLAY",
+        "label": "Replay a detection report",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "anti-replay",
+        "hid": "DEMO_ANTI_REPLAY",
+        "label": "Enforce freshness window",
+        "type": "Countermeasure",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "rollover",
+        "hid": "DEMO_ROLLOVER",
+        "label": "Abuse counter rollover",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      },
+      {
+        "id": "obsolete",
+        "hid": "DEMO_OBSOLETE",
+        "label": "Exploit retired downlink mode",
+        "type": "Attack",
+        "description": "Prototype-authored FireSat analytical illustration; not a validated system finding.",
+        "provenance": "Prototype illustration"
+      }
+    ],
+    "edges": [
+      {
+        "id": "loss--env",
+        "source": "loss",
+        "target": "env",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "loss--standby",
+        "source": "loss",
+        "target": "standby",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "loss--imaging",
+        "source": "loss",
+        "target": "imaging",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "imaging--processor",
+        "source": "imaging",
+        "target": "processor",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "standby--processor",
+        "source": "standby",
+        "target": "processor",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "imaging--video",
+        "source": "imaging",
+        "target": "video",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "imaging--classify",
+        "source": "imaging",
+        "target": "classify",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "standby--downlink",
+        "source": "standby",
+        "target": "downlink",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "processor--firmware",
+        "source": "processor",
+        "target": "firmware",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "processor--diagnostic",
+        "source": "processor",
+        "target": "diagnostic",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "firmware--signed",
+        "source": "firmware",
+        "target": "signed",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "firmware--custody",
+        "source": "firmware",
+        "target": "custody",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "signed--keytheft",
+        "source": "signed",
+        "target": "keytheft",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": 1,
+        "allowedReason": "Prototype acceptance: restricted maintenance exposure is reviewed during the example mission campaign."
+      },
+      {
+        "id": "custody--derived-key",
+        "source": "custody",
+        "target": "derived-key",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "video--video-tamper",
+        "source": "video",
+        "target": "video-tamper",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "video-tamper--frame-check",
+        "source": "video-tamper",
+        "target": "frame-check",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": true,
+        "blockReason": "Illustrative Complete Block claim for review: independent frame-origin checks reject this modeled injection route.",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "classify--model-bias",
+        "source": "classify",
+        "target": "model-bias",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "model-bias--cross-check",
+        "source": "model-bias",
+        "target": "cross-check",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "cross-check--calibration",
+        "source": "cross-check",
+        "target": "calibration",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "calibration--baseline",
+        "source": "calibration",
+        "target": "baseline",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "baseline--review-bypass",
+        "source": "baseline",
+        "target": "review-bypass",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "downlink--replay",
+        "source": "downlink",
+        "target": "replay",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "replay--anti-replay",
+        "source": "replay",
+        "target": "anti-replay",
+        "lossId": "loss",
+        "gate": "AND",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "anti-replay--rollover",
+        "source": "anti-replay",
+        "target": "rollover",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": false,
+        "tailoredReason": "",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      },
+      {
+        "id": "downlink--obsolete",
+        "source": "downlink",
+        "target": "obsolete",
+        "lossId": "loss",
+        "gate": "OR",
+        "sequence": null,
+        "tailoredOut": true,
+        "tailoredReason": "Prototype context excludes the retired development interface from the operational payload configuration.",
+        "completeBlock": false,
+        "blockReason": "",
+        "allowedRV": null,
+        "allowedReason": ""
+      }
+    ]
+  },
+  "routeAnalysis": {
+    "total": "9",
+    "unaddressedRVCount": "4",
+    "statusCounts": {
+      "RV": 4,
+      "DERIVED": 2,
+      "ALLOWED": 2,
+      "BLOCKED": 1
+    },
+    "truncated": false,
+    "paths": [
+      {
+        "id": "path:loss--imaging/imaging--classify/classify--model-bias/model-bias--cross-check/cross-check--calibration/calibration--baseline/baseline--review-bypass",
+        "nodeIds": [
+          "loss",
+          "imaging",
+          "classify",
+          "model-bias",
+          "cross-check",
+          "calibration",
+          "baseline",
+          "review-bypass"
+        ],
+        "edgeIds": [
+          "loss--imaging",
+          "imaging--classify",
+          "classify--model-bias",
+          "model-bias--cross-check",
+          "cross-check--calibration",
+          "calibration--baseline",
+          "baseline--review-bypass"
+        ],
+        "status": "RV",
+        "reason": "",
+        "terminalId": "review-bypass"
+      },
+      {
+        "id": "path:loss--imaging/imaging--processor/processor--diagnostic",
+        "nodeIds": [
+          "loss",
+          "imaging",
+          "processor",
+          "diagnostic"
+        ],
+        "edgeIds": [
+          "loss--imaging",
+          "imaging--processor",
+          "processor--diagnostic"
+        ],
+        "status": "RV",
+        "reason": "",
+        "terminalId": "diagnostic"
+      },
+      {
+        "id": "path:loss--imaging/imaging--processor/processor--firmware/firmware--custody/custody--derived-key",
+        "nodeIds": [
+          "loss",
+          "imaging",
+          "processor",
+          "firmware",
+          "custody",
+          "derived-key"
+        ],
+        "edgeIds": [
+          "loss--imaging",
+          "imaging--processor",
+          "processor--firmware",
+          "firmware--custody",
+          "custody--derived-key"
+        ],
+        "status": "DERIVED",
+        "reason": "",
+        "terminalId": "derived-key"
+      },
+      {
+        "id": "path:loss--imaging/imaging--processor/processor--firmware/firmware--signed/signed--keytheft",
+        "nodeIds": [
+          "loss",
+          "imaging",
+          "processor",
+          "firmware",
+          "signed",
+          "keytheft"
+        ],
+        "edgeIds": [
+          "loss--imaging",
+          "imaging--processor",
+          "processor--firmware",
+          "firmware--signed",
+          "signed--keytheft"
+        ],
+        "status": "ALLOWED",
+        "reason": "Prototype acceptance: restricted maintenance exposure is reviewed during the example mission campaign.",
+        "terminalId": "keytheft"
+      },
+      {
+        "id": "path:loss--imaging/imaging--video/video--video-tamper/video-tamper--frame-check",
+        "nodeIds": [
+          "loss",
+          "imaging",
+          "video",
+          "video-tamper",
+          "frame-check"
+        ],
+        "edgeIds": [
+          "loss--imaging",
+          "imaging--video",
+          "video--video-tamper",
+          "video-tamper--frame-check"
+        ],
+        "status": "BLOCKED",
+        "reason": "Illustrative Complete Block claim for review: independent frame-origin checks reject this modeled injection route.",
+        "terminalId": "frame-check"
+      },
+      {
+        "id": "path:loss--standby/standby--downlink/downlink--replay/replay--anti-replay/anti-replay--rollover",
+        "nodeIds": [
+          "loss",
+          "standby",
+          "downlink",
+          "replay",
+          "anti-replay",
+          "rollover"
+        ],
+        "edgeIds": [
+          "loss--standby",
+          "standby--downlink",
+          "downlink--replay",
+          "replay--anti-replay",
+          "anti-replay--rollover"
+        ],
+        "status": "RV",
+        "reason": "",
+        "terminalId": "rollover"
+      },
+      {
+        "id": "path:loss--standby/standby--processor/processor--diagnostic",
+        "nodeIds": [
+          "loss",
+          "standby",
+          "processor",
+          "diagnostic"
+        ],
+        "edgeIds": [
+          "loss--standby",
+          "standby--processor",
+          "processor--diagnostic"
+        ],
+        "status": "RV",
+        "reason": "",
+        "terminalId": "diagnostic"
+      },
+      {
+        "id": "path:loss--standby/standby--processor/processor--firmware/firmware--custody/custody--derived-key",
+        "nodeIds": [
+          "loss",
+          "standby",
+          "processor",
+          "firmware",
+          "custody",
+          "derived-key"
+        ],
+        "edgeIds": [
+          "loss--standby",
+          "standby--processor",
+          "processor--firmware",
+          "firmware--custody",
+          "custody--derived-key"
+        ],
+        "status": "DERIVED",
+        "reason": "",
+        "terminalId": "derived-key"
+      },
+      {
+        "id": "path:loss--standby/standby--processor/processor--firmware/firmware--signed/signed--keytheft",
+        "nodeIds": [
+          "loss",
+          "standby",
+          "processor",
+          "firmware",
+          "signed",
+          "keytheft"
+        ],
+        "edgeIds": [
+          "loss--standby",
+          "standby--processor",
+          "processor--firmware",
+          "firmware--signed",
+          "signed--keytheft"
+        ],
+        "status": "ALLOWED",
+        "reason": "Prototype acceptance: restricted maintenance exposure is reviewed during the example mission campaign.",
+        "terminalId": "keytheft"
+      }
+    ]
+  },
+  "limits": [
+    "Only explicitly identified payload system, environment, states, components, interfaces and functions are copied FireSat references. Loss, Asset, attacks, countermeasures, decisions and metric inputs are prototype-authored illustrations.",
+    "Shared Payload Processor identity under Standby and Imaging yields repeated terminal identities on distinct routes; route counts are not independent attack counts, scenario probabilities or risk measures.",
+    "The Environment context and tailored retired-interface branch are excluded from route enumeration by the source algorithm.",
+    "Complete Block and Allowed RV are recorded analyst decisions. Their existence does not demonstrate a control is effective or that a regime authority has approved residual exposure.",
+    "Derived update-key confidentiality is an additional assurance obligation. No completed evidence or subordinate security case is asserted.",
+    "Prototype metric values and simulated authoritative UUIDs are omitted from this inventory; neither is used as operational assurance evidence.",
+    "The source SAND example is a separate variant. The overview records Standby and Imaging but does not assert an ordered attack scenario."
+  ]
+}

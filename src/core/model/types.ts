@@ -35,6 +35,8 @@ export interface GsnElement {
   inContextOf: string[];
   /** Evidence note keys / paths (Solutions) */
   hasEvidence: string[];
+  /** Preserved source/provenance frontmatter; semantics use the typed fields above. */
+  metadata?: Record<string, unknown>;
   created?: string;
   modified?: string;
 }
@@ -45,6 +47,8 @@ export interface EvidenceNote {
   statement: string;
   kind: EvidenceKind;
   artifactPath?: string;
+  /** Preserved source/provenance frontmatter; semantics use the typed fields above. */
+  metadata?: Record<string, unknown>;
   created?: string;
   modified?: string;
 }
@@ -58,6 +62,8 @@ export interface ViewportState {
   x: number;
   y: number;
   zoom: number;
+  /** Optional presentation-only branch being read when the viewport was saved. */
+  focusId?: string;
 }
 
 export interface LayoutDoc {
@@ -79,6 +85,8 @@ export interface GoalStructure {
   elements: Map<string, GsnElement>;
   evidence: Map<string, EvidenceNote>;
   layout: LayoutDoc;
+  /** Import problems retained even when a duplicate record cannot occupy a Map key. */
+  loadFindings?: Finding[];
 }
 
 export type FindingSeverity = "ERROR" | "WARNING" | "INFO";

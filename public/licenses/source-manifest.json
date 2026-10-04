@@ -1,0 +1,166 @@
+{
+  "elkjsVersion": "0.12.0",
+  "electedLicense": "EPL-2.0",
+  "retrieved": "2026-10-04",
+  "sourceCorrespondence": "All installed elkjs lib files are byte-identical to release tag 0.12.0; upstream ELK v0.12.0 matches the release major/minor and upstream release build instructions. Ancillary Java component versions are taken from elkjs build.gradle.",
+  "sources": [
+    {
+      "file": "sources/elkjs-0.12.0-source.tar.gz",
+      "url": "https://codeload.github.com/kieler/elkjs/tar.gz/ff5771d7165445c42c408bb8a090c8035272218c",
+      "component": "elkjs",
+      "version": "0.12.0",
+      "license": "EPL-2.0",
+      "revision": "ff5771d7165445c42c408bb8a090c8035272218c",
+      "sha256": "2871a717524de81a0f928708722092d54e531d46313b32a4594508434400d421"
+    },
+    {
+      "file": "sources/elk-0.12.0-source.tar.gz",
+      "url": "https://codeload.github.com/eclipse-elk/elk/tar.gz/323312916048544e4e594eab3303cdb0d01e2929",
+      "component": "Eclipse Layout Kernel",
+      "version": "0.12.0",
+      "license": "EPL-2.0",
+      "revision": "323312916048544e4e594eab3303cdb0d01e2929",
+      "sha256": "ff68d72187dfda4697c63b2a684bd2febaa471bdb3d8e9fcd800a75463aaadba"
+    },
+    {
+      "file": "sources/emf-common-2.12.4-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/com/genmymodel/emf/gwt/emf-common/2.12.4/emf-common-2.12.4-sources.jar",
+      "component": "emf-common-2.12.4",
+      "license": "EPL-1.0",
+      "sha256": "8dfc4e97ca8eee5474927e2b0c5f3bdbd9a52dcd5dff8c0b433b1e938b843bbe"
+    },
+    {
+      "file": "sources/emf-ecore-2.12.4-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/com/genmymodel/emf/gwt/emf-ecore/2.12.4/emf-ecore-2.12.4-sources.jar",
+      "component": "emf-ecore-2.12.4",
+      "license": "EPL-1.0",
+      "sha256": "dd3b8c1c3bd0a27c1fbba908bcf0ff21a999148da4e68b3546bcde1dbce7b13a"
+    },
+    {
+      "file": "sources/org.eclipse.xtext.xbase.lib-2.36.0-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.36.0/org.eclipse.xtext.xbase.lib-2.36.0-sources.jar",
+      "component": "org.eclipse.xtext.xbase.lib-2.36.0",
+      "license": "EPL-2.0",
+      "sha256": "5e06e3cfc74663d11e0debe4cce88e1134d00eba8122b90712fccbb3a5f6754a"
+    },
+    {
+      "file": "sources/org.eclipse.xtend.lib-2.36.0-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/org/eclipse/xtend/org.eclipse.xtend.lib/2.36.0/org.eclipse.xtend.lib-2.36.0-sources.jar",
+      "component": "org.eclipse.xtend.lib-2.36.0",
+      "license": "EPL-2.0",
+      "sha256": "c06d94fbce7b4c831282f5ec818798e970cc893a498ed6524d9e1e47347d362f"
+    },
+    {
+      "file": "sources/org.eclipse.xtend.lib.macro-2.36.0-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/org/eclipse/xtend/org.eclipse.xtend.lib.macro/2.36.0/org.eclipse.xtend.lib.macro-2.36.0-sources.jar",
+      "component": "org.eclipse.xtend.lib.macro-2.36.0",
+      "license": "EPL-2.0",
+      "sha256": "a273e33f833667c13287ca6204446c2b20ac71919f1774177960ea1d071895ba"
+    },
+    {
+      "file": "sources/guava-31.1-jre-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre-sources.jar",
+      "component": "guava-31.1-jre",
+      "license": "Apache-2.0",
+      "sha256": "8ab1853cdaf936ec88be80c17302b7c20abafbd4f54d4fb54d7011c529e3a44a"
+    },
+    {
+      "file": "sources/guava-gwt-31.1-jre-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/com/google/guava/guava-gwt/31.1-jre/guava-gwt-31.1-jre-sources.jar",
+      "component": "guava-gwt-31.1-jre",
+      "license": "Apache-2.0",
+      "sha256": "d7e52f41ac6ea010787b5b3c8db7ffb54375d8d0c39c98c2badc9c38de7bf14b"
+    },
+    {
+      "file": "sources/gwt-user-2.11.0-sources.jar",
+      "url": "https://repo.maven.apache.org/maven2/org/gwtproject/gwt-user/2.11.0/gwt-user-2.11.0-sources.jar",
+      "component": "gwt-user-2.11.0",
+      "license": "Apache-2.0",
+      "sha256": "3aa2b0f566dc1252f745b26654bc10287fced95991777af304567cb069965768"
+    }
+  ],
+  "notices": [
+    {
+      "file": "elk-embedded/ELK-NOTICE.md",
+      "sha256": "bee47856ac471e04ec60be967d9014e20395d5f65292f1555b6178add8497168"
+    },
+    {
+      "file": "elk-embedded/Apache-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "elk-embedded/gwt-jre-emulation-COPYING.txt",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "file": "elk-embedded/guava-31.1-COPYING.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "elk-embedded/gwt-core-COPYING.txt",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "file": "elk-embedded/gwt-2.11.0-COPYING.txt",
+      "sha256": "12c6d37dfddf0b524ab8e10b1702a77da71d0e708ba35fefd86d16a15a9200ef"
+    },
+    {
+      "file": "elk-embedded/gwt-json-COPYING.txt",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "file": "elk-embedded/SOURCE-ATTRIBUTIONS.txt",
+      "sha256": "ef0c93052d38ee0c345da6f6f70fe540be6a3629264d4b1b06666019bc12af1e"
+    },
+    {
+      "file": "elk-embedded/EPL-1.0.html",
+      "sha256": "a40741b59364cc49449255e9b9bfe1fcfe6a2e7ab4d37ca89db3bacbfb14e9d2"
+    },
+    {
+      "file": "elk-embedded/ELK-LICENSE.md",
+      "sha256": "22080908c4e8696d8ea137db9c51b0dd67c19a4440b3be689b9d06d397aa88fd"
+    },
+    {
+      "file": "elk-embedded/EPL-2.0.md",
+      "sha256": "637e81f4a1b6b4079535c499fca05e238cf7605c1ff5b76d60d7da7ce96700c9"
+    }
+  ],
+  "unmodifiedDistributionFiles": [
+    {
+      "file": "node_modules/elkjs/lib/elk-worker.js",
+      "sha256": "f7617e622f565748e1c88a9f45d97b458bc9c3f4299c0fdc6ed778a92ef30683"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk-api.d.ts",
+      "sha256": "93f3c5a56c99e0f88f6d6d45e24e4b6861b5500a7a6c03ea01f8af8d46d599af"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk-worker.d.ts",
+      "sha256": "cfd7e67195b610f808ebab6ba1065cc2b1709af17309a1975a70f52f814459cc"
+    },
+    {
+      "file": "node_modules/elkjs/lib/main.d.ts",
+      "sha256": "6d5ae88a366b976d02fc68bc3cc15af8b23b287735dd506b32d55cb74452f7a3"
+    },
+    {
+      "file": "node_modules/elkjs/lib/main.js",
+      "sha256": "2e11f2611e1bc60bf3a15c267a0f128ecb5395cb348f733cbc44cefa341f4d44"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk-worker.min.js",
+      "sha256": "e4f5c51c6f2fd564bb64e52e81c4a85a316ef2f24f8b90e1db5eb886c765b030"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk.bundled.d.ts",
+      "sha256": "6d5ae88a366b976d02fc68bc3cc15af8b23b287735dd506b32d55cb74452f7a3"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk-api.js",
+      "sha256": "ccca46175c05bbd280b5de6c9853103711e52c666a101f145b717e345363e24d"
+    },
+    {
+      "file": "node_modules/elkjs/lib/elk.bundled.js",
+      "sha256": "1222e44f953ce7746af23801e723708f8e6f436b8b377a6a5fc7552f34a307b3"
+    }
+  ]
+}

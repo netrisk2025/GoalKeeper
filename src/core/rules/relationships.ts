@@ -1,4 +1,4 @@
-/** Relationship legality matrix (SRS FR-17–FR-20, RK-1). */
+/** GSN v3 Table 1:2-2: the core relationship matrix (SRS 1.2–1.3). */
 
 import type { GsnType, RelType } from "../model/types";
 
@@ -12,7 +12,7 @@ export function canLink(
       return targetType === "GsnGoal" || targetType === "GsnStrategy" || targetType === "GsnSolution";
     }
     if (sourceType === "GsnStrategy") {
-      return targetType === "GsnGoal" || targetType === "GsnSolution";
+      return targetType === "GsnGoal";
     }
     return false;
   }

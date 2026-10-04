@@ -1,0 +1,202 @@
+[
+  {
+    "name": "@tauri-apps/api",
+    "version": "2.11.1",
+    "license": "Apache-2.0 OR MIT",
+    "declaredLicense": "Apache-2.0 OR MIT",
+    "repository": "git+https://github.com/tauri-apps/tauri.git",
+    "integrity": "sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==",
+    "files": [
+      {
+        "file": "npm/@tauri-apps__api@2.11.1/LICENSE_APACHE-2.0",
+        "source": "node_modules/@tauri-apps/api/LICENSE_APACHE-2.0",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      },
+      {
+        "file": "npm/@tauri-apps__api@2.11.1/LICENSE_MIT",
+        "source": "node_modules/@tauri-apps/api/LICENSE_MIT",
+        "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d"
+      }
+    ]
+  },
+  {
+    "name": "@tauri-apps/plugin-dialog",
+    "version": "2.7.2",
+    "license": "MIT OR Apache-2.0",
+    "declaredLicense": "MIT OR Apache-2.0",
+    "repository": "https://github.com/tauri-apps/plugins-workspace",
+    "integrity": "sha512-pX0IGm1I3I6wc+zeKYcq1GSqogK6okCNX5fOdaNU5ab1AjGS6l1E5wFNjEb7meg7ZFSp0JUs+0jQGQNyOvLrsg==",
+    "files": [
+      {
+        "file": "npm/@tauri-apps__plugin-dialog@2.7.2/LICENSE.spdx",
+        "source": "node_modules/@tauri-apps/plugin-dialog/LICENSE.spdx",
+        "sha256": "eb8a6c84630461b352badcab1dbe5d0168c56d377358b2b8c86b51003272d5ef"
+      }
+    ]
+  },
+  {
+    "name": "@tauri-apps/plugin-fs",
+    "version": "2.5.1",
+    "license": "MIT OR Apache-2.0",
+    "declaredLicense": "MIT OR Apache-2.0",
+    "repository": "https://github.com/tauri-apps/plugins-workspace",
+    "integrity": "sha512-9Lz+Jopp6QyeEWhlpkMx4R/+P9HgR+AVAI4vOZhlT8Xaymtz8iVI/Ov984/XTqgJz/5gz5NretqPB/XEMS3NhQ==",
+    "files": [
+      {
+        "file": "npm/@tauri-apps__plugin-fs@2.5.1/LICENSE.spdx",
+        "source": "node_modules/@tauri-apps/plugin-fs/LICENSE.spdx",
+        "sha256": "eb8a6c84630461b352badcab1dbe5d0168c56d377358b2b8c86b51003272d5ef"
+      }
+    ]
+  },
+  {
+    "name": "@types/prop-types",
+    "version": "15.7.15",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+    "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==",
+    "files": [
+      {
+        "file": "npm/@types__prop-types@15.7.15/LICENSE",
+        "source": "node_modules/@types/prop-types/LICENSE",
+        "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+      }
+    ]
+  },
+  {
+    "name": "@types/react",
+    "version": "18.3.31",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+    "integrity": "sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==",
+    "files": [
+      {
+        "file": "npm/@types__react@18.3.31/LICENSE",
+        "source": "node_modules/@types/react/LICENSE",
+        "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+      }
+    ]
+  },
+  {
+    "name": "csstype",
+    "version": "3.2.3",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/frenic/csstype",
+    "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+    "files": [
+      {
+        "file": "npm/csstype@3.2.3/LICENSE",
+        "source": "node_modules/csstype/LICENSE",
+        "sha256": "11d55bd4541c75ee7879547ac49089c489163dae49551389713c3d026cab383e"
+      }
+    ]
+  },
+  {
+    "name": "elkjs",
+    "version": "0.12.0",
+    "license": "EPL-2.0 (elected)",
+    "declaredLicense": "EPL-2.0 OR GPL-3.0-or-later",
+    "repository": "https://github.com/kieler/elkjs.git",
+    "integrity": "sha512-YZcKynxVxYoKIOEpywEPwCFdg+BTbxQRNf3pbwdDCvc8O3kQD8bmIwSxKU1eOTVc4Xo+VG9Te+575mlfvOrhEQ==",
+    "files": [
+      {
+        "file": "npm/elkjs@0.12.0/LICENSE.md",
+        "source": "node_modules/elkjs/LICENSE.md",
+        "sha256": "637e81f4a1b6b4079535c499fca05e238cf7605c1ff5b76d60d7da7ce96700c9"
+      }
+    ]
+  },
+  {
+    "name": "js-tokens",
+    "version": "4.0.0",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "lydell/js-tokens",
+    "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
+    "files": [
+      {
+        "file": "npm/js-tokens@4.0.0/LICENSE",
+        "source": "node_modules/js-tokens/LICENSE",
+        "sha256": "2213d91c606205c71eb051a199478cdc2adde945893404d7f1421436dd6d5cc1"
+      }
+    ]
+  },
+  {
+    "name": "loose-envify",
+    "version": "1.4.0",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "git://github.com/zertosh/loose-envify.git",
+    "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+    "files": [
+      {
+        "file": "npm/loose-envify@1.4.0/LICENSE",
+        "source": "node_modules/loose-envify/LICENSE",
+        "sha256": "4eb7543b08d955a6d23fcc224601d43ff566e775be918805e26210d7f6eb4893"
+      }
+    ]
+  },
+  {
+    "name": "react",
+    "version": "18.3.1",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/facebook/react.git",
+    "integrity": "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==",
+    "files": [
+      {
+        "file": "npm/react@18.3.1/LICENSE",
+        "source": "node_modules/react/LICENSE",
+        "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+      }
+    ]
+  },
+  {
+    "name": "react-dom",
+    "version": "18.3.1",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/facebook/react.git",
+    "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
+    "files": [
+      {
+        "file": "npm/react-dom@18.3.1/LICENSE",
+        "source": "node_modules/react-dom/LICENSE",
+        "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+      }
+    ]
+  },
+  {
+    "name": "scheduler",
+    "version": "0.23.2",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "https://github.com/facebook/react.git",
+    "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
+    "files": [
+      {
+        "file": "npm/scheduler@0.23.2/LICENSE",
+        "source": "node_modules/scheduler/LICENSE",
+        "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+      }
+    ]
+  },
+  {
+    "name": "zustand",
+    "version": "5.0.14",
+    "license": "MIT",
+    "declaredLicense": "MIT",
+    "repository": "git+https://github.com/pmndrs/zustand.git",
+    "integrity": "sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==",
+    "files": [
+      {
+        "file": "npm/zustand@5.0.14/LICENSE",
+        "source": "node_modules/zustand/LICENSE",
+        "sha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417"
+      }
+    ]
+  }
+]

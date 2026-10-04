@@ -10,9 +10,10 @@ import { useAppStore } from "../state/store";
 interface Props {
   open: boolean;
   onClose: () => void;
+  beforeOpen: () => boolean;
 }
 
-export function OpenVaultDialog({ open, onClose }: Props) {
+export function OpenVaultDialog({ open, onClose, beforeOpen }: Props) {
   const openVault = useAppStore((s) => s.openVault);
   const openNamedVault = useAppStore((s) => s.openNamedVault);
   const useDemoVault = useAppStore((s) => s.useDemoVault);
@@ -43,6 +44,7 @@ export function OpenVaultDialog({ open, onClose }: Props) {
               style={{ width: "100%", marginBottom: 12 }}
               disabled={busy}
               onClick={() => {
+                if (!beforeOpen()) return;
                 setBusy(true);
                 void openVault()
                   .then(() => {
@@ -81,6 +83,7 @@ export function OpenVaultDialog({ open, onClose }: Props) {
             className="gk-btn primary"
             disabled={busy || !name.trim()}
             onClick={() => {
+              if (!beforeOpen()) return;
               setBusy(true);
               void openNamedVault(name.trim(), { empty: true })
                 .then(() => {
@@ -97,6 +100,7 @@ export function OpenVaultDialog({ open, onClose }: Props) {
             className="gk-btn"
             disabled={busy}
             onClick={() => {
+              if (!beforeOpen()) return;
               setBusy(true);
               void useDemoVault()
                 .then(() => onClose())
@@ -120,6 +124,7 @@ export function OpenVaultDialog({ open, onClose }: Props) {
                 style={{ width: "100%" }}
                 disabled={busy}
                 onClick={() => {
+                  if (!beforeOpen()) return;
                   setBusy(true);
                   void openNamedVault(id)
                     .then(() => onClose())

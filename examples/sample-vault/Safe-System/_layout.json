@@ -2,13 +2,34 @@
   "schemaVersion": 1,
   "rootGsnId": "G1",
   "tool": "goalkeeper",
-  "viewport": { "x": 0, "y": 0, "zoom": 1 },
-  "nodes": {
-    "G1": { "x": 120, "y": 40 },
-    "S1": { "x": 120, "y": 160 },
-    "G2": { "x": 40, "y": 280 },
-    "Sn1": { "x": 280, "y": 280 },
-    "C1": { "x": 360, "y": 40 }
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
   },
-  "display": { "showEvidenceBadges": true }
+  "nodes": {
+    "G1": {
+      "x": 220,
+      "y": 180
+    },
+    "C1": {
+      "x": 720,
+      "y": 180
+    },
+    "S1": {
+      "x": 220,
+      "y": 500
+    },
+    "G2": {
+      "x": 220,
+      "y": 800
+    },
+    "Sn1": {
+      "x": 220,
+      "y": 1170
+    }
+  },
+  "display": {
+    "showEvidenceBadges": true
+  }
 }

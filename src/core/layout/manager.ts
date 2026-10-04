@@ -3,12 +3,15 @@
 import type { GoalStructure, LayoutDoc, NodePosition, ViewportState } from "../model/types";
 import { emptyLayout } from "../model/types";
 import { supportTiers } from "../graph/reachability";
+import { glyphFor } from "../presentation/geometry";
 
-const NODE_W = 200;
-const NODE_H = 80;
-const GAP_X = 40;
-const GAP_Y = 100;
-const CONTEXT_OFFSET_X = 220;
+/** Incremental placement preserves existing centres and respects the rendered glyphs. */
+function nodeSize(structure: GoalStructure, id: string): { width: number; height: number } {
+  const element = structure.elements.get(id);
+  if (!element) return { width: 312, height: 160 };
+  const glyph = glyphFor(element);
+  return { width: glyph.width, height: glyph.height + (element.undeveloped ? 24 : 0) };
+}
 
 export function placeNewNode(
   structure: GoalStructure,
@@ -18,51 +21,35 @@ export function placeNewNode(
   relType?: "SUPPORTED_BY" | "IN_CONTEXT_OF",
 ): NodePosition {
   if (working[newId]) return working[newId];
-
+  const size = nodeSize(structure, newId);
   if (parentId && working[parentId]) {
-    const p = working[parentId];
+    const parent = working[parentId], parentSize = nodeSize(structure, parentId);
     if (relType === "IN_CONTEXT_OF") {
-      return nudge(working, { x: p.x + CONTEXT_OFFSET_X, y: p.y });
+      return nudge(structure, working, newId, { x: parent.x + (parentSize.width + size.width) / 2 + 90, y: parent.y });
     }
-    // SUPPORTED_BY: below parent, offset by sibling count
-    const siblings = countChildrenAt(structure, parentId, working);
-    return nudge(working, {
-      x: p.x + siblings * (NODE_W + GAP_X) - NODE_W,
-      y: p.y + NODE_H + GAP_Y,
-    });
+    const siblingCount = structure.elements.get(parentId)?.supportedBy.filter(id => working[id]).length ?? 0;
+    return nudge(structure, working, newId, { x: parent.x + siblingCount * (size.width + 60), y: parent.y + (parentSize.height + size.height) / 2 + 100 });
   }
-
-  // Hierarchical fallback: tier layout slot
   const tiers = supportTiers(structure.rootId, structure.elements);
-  const tier = tiers.get(newId) ?? Math.max(0, ...Object.values(tiers), 0) + 1;
-  const atTier = Object.keys(working).filter((id) => (tiers.get(id) ?? -1) === tier).length;
-  return nudge(working, {
-    x: 80 + atTier * (NODE_W + GAP_X),
-    y: 60 + tier * (NODE_H + GAP_Y),
-  });
+  const tier = tiers.get(newId) ?? Math.max(0, ...tiers.values()) + 1;
+  return nudge(structure, working, newId, { x: size.width / 2 + 80, y: size.height / 2 + 60 + tier * (size.height + 100) });
 }
 
-function countChildrenAt(
-  structure: GoalStructure,
-  parentId: string,
-  working: Record<string, NodePosition>,
-): number {
-  const parent = structure.elements.get(parentId);
-  if (!parent) return 0;
-  return parent.supportedBy.filter((id) => working[id]).length;
-}
-
-function nudge(working: Record<string, NodePosition>, pos: NodePosition): NodePosition {
-  let { x, y } = pos;
-  const positions = Object.values(working);
-  for (let i = 0; i < 20; i++) {
-    const clash = positions.some(
-      (p) => Math.abs(p.x - x) < NODE_W * 0.7 && Math.abs(p.y - y) < NODE_H * 0.7,
-    );
+function nudge(structure: GoalStructure, working: Record<string, NodePosition>, newId: string, pos: NodePosition): NodePosition {
+  const own = nodeSize(structure, newId);
+  let x = pos.x;
+  const positions = Object.entries(working).filter(([id]) => id !== newId && structure.elements.has(id));
+  // Each collision moves beyond another glyph's right edge; this terminates even
+  // for very tall circles or long-text Goals, without moving any existing node.
+  for (let attempt = 0; attempt <= positions.length; attempt++) {
+    const clash = positions.find(([id, p]) => {
+      const other = nodeSize(structure, id);
+      return Math.abs(p.x - x) < (own.width + other.width) / 2 + 40 && Math.abs(p.y - pos.y) < (own.height + other.height) / 2 + 40;
+    });
     if (!clash) break;
-    x += NODE_W * 0.5;
+    x = clash[1].x + nodeSize(structure, clash[0]).width / 2 + own.width / 2 + 60;
   }
-  return { x, y };
+  return { x, y: pos.y };
 }
 
 /** Place all missing nodes via tier layout from root. */
@@ -73,8 +60,9 @@ export function placeAllMissing(
   const result = { ...working };
   const tiers = supportTiers(structure.rootId, structure.elements);
   // Ensure root
-  if (!result[structure.rootId]) {
-    result[structure.rootId] = { x: 80, y: 40 };
+  if (structure.rootId && structure.elements.has(structure.rootId) && !result[structure.rootId]) {
+    const rootSize = nodeSize(structure, structure.rootId);
+    result[structure.rootId] = { x: rootSize.width / 2 + 80, y: rootSize.height / 2 + 60 };
   }
   // Sort by tier then gsnId for stability
   const ids = [...structure.elements.keys()].sort((a, b) => {
@@ -103,9 +91,10 @@ export function placeAllMissing(
     }
     const slot = tierCounters.get(tier) ?? 0;
     tierCounters.set(tier, slot + 1);
-    result[id] = nudge(result, {
-      x: 80 + slot * (NODE_W + GAP_X),
-      y: 40 + tier * (NODE_H + GAP_Y),
+    const size = nodeSize(structure, id);
+    result[id] = nudge(structure, result, id, {
+      x: size.width / 2 + 80 + slot * (size.width + 60),
+      y: size.height / 2 + 60 + tier * (size.height + 100),
     });
     // silence unused el warning path
     void el;
@@ -146,7 +135,7 @@ export function mergeLastSaved(
   }
 
   for (const id of structure.elements.keys()) {
-    if (saved[id]) {
+    if (saved[id] && Number.isFinite(saved[id].x) && Number.isFinite(saved[id].y)) {
       positions[id] = { ...saved[id] };
     }
   }
@@ -185,7 +174,7 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc | null {
   const n = o.nodes;
   if (n && typeof n === "object") {
     for (const [id, pos] of Object.entries(n as Record<string, { x?: number; y?: number }>)) {
-      if (typeof pos?.x === "number" && typeof pos?.y === "number") {
+      if (typeof pos?.x === "number" && typeof pos?.y === "number" && Number.isFinite(pos.x) && Number.isFinite(pos.y)) {
         nodes[id] = { x: pos.x, y: pos.y };
       }
     }
@@ -197,9 +186,10 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc | null {
     tool: "goalkeeper",
     savedAt: typeof o.savedAt === "string" ? o.savedAt : undefined,
     viewport: {
-      x: Number(vp.x) || 0,
-      y: Number(vp.y) || 0,
-      zoom: Number(vp.zoom) || 1,
+      x: Number.isFinite(Number(vp.x)) ? Number(vp.x) : 0,
+      y: Number.isFinite(Number(vp.y)) ? Number(vp.y) : 0,
+      zoom: Number.isFinite(Number(vp.zoom)) && Number(vp.zoom) > 0 ? Number(vp.zoom) : 1,
+      ...(typeof vp.focusId === "string" && vp.focusId.trim() ? { focusId: vp.focusId } : {}),
     },
     nodes,
     display: (o.display as LayoutDoc["display"]) ?? { showEvidenceBadges: true },
